@@ -1,0 +1,3 @@
+rootProject.name = 'revizit'
+
+include 'backend', 'frontend'
