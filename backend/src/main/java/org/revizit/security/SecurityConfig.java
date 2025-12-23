@@ -3,6 +3,7 @@ package org.revizit.security;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.revizit.persistence.repository.UserAccountRepository;
+import org.revizit.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,8 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                  JwtAuthenticationFilter jwtAuthFilter,
+                                                 AuthenticationManager authenticationManager,
+                                                 UserService userService,
                                                  AuthenticationProvider authenticationProvider)
       throws Exception {
     http
@@ -46,6 +49,8 @@ public class SecurityConfig {
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
+        .authenticationManager(authenticationManager)
+        .userDetailsService(userService)
         .authenticationProvider(authenticationProvider)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(it -> it

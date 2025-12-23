@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
+  public static final String ROLE_PLAIN = "PLAIN";
+  public static final String ROLE_ADMIN = "ADMIN";
+
   private final UserAccountRepository userAccountRepository;
 
   public UserAccount currentUser() {
@@ -28,6 +31,15 @@ public class UserService implements UserDetailsService {
     }
 
     return null;
+  }
+
+  public boolean isCurrentUserAdmin() {
+    final var user = currentUser();
+    return isUserAdmin(user);
+  }
+
+  public boolean isUserAdmin(UserAccount user) {
+    return user != null && ROLE_ADMIN.equals(user.getUserRole());
   }
 
   @Override

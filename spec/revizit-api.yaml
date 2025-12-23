@@ -5,14 +5,8 @@ info:
 tags:
   - name: Auth
     description: Authentication stuff
-  - name: Actuator
-    description: Spring Boot Actuator endpoints
-  - name: Project
-    description: Stuff belonging to project management
   - name: Profile
     description: User profile related stuff
-  - name: Comment
-    description: Comment sections
 paths:
 
   # Auth
@@ -52,6 +46,32 @@ paths:
         '403':
           description: Unauthorized
 
+  /profile/my:
+    get:
+      tags:
+        - Profile
+      summary: Get user profile
+      operationId: getMyProfile
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
 components:
   schemas:
     AuthenticationRequest:
@@ -67,3 +87,29 @@ components:
       properties:
         token:
           type: string
+    Profile:
+      type: object
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+        isAdmin:
+          type: boolean
+          default: false
+      required: [ username, name, isAdmin ]
+
+    ApiError:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
+        description:
+          type: string
+      required: [ status, timestamp ]

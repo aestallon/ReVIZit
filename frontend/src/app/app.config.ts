@@ -12,11 +12,12 @@ import Aura from '@primeuix/themes/aura';
 
 import {routes} from './app.routes';
 import {provideHttpClient, withInterceptors} from '@angular/common/http';
-import {INTERCEPTOR_REQUEST, INTERCEPTOR_RESPONSE, UserService} from './auth/auth';
+import {INTERCEPTOR_REQUEST, INTERCEPTOR_RESPONSE} from './auth/auth';
 import {providePrimeNG} from 'primeng/config';
 import {definePreset} from '@primeuix/themes';
 import {MessageService} from 'primeng/api';
 import {BASE_PATH} from '../api/revizit';
+import {UserService} from './service/user.service';
 
 const Theme = definePreset(Aura, {});
 

@@ -1,8 +1,7 @@
-package org.revizit.rest.api;
+package org.revizit.rest.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.revizit.persistence.entity.UserAccount;
-import org.revizit.persistence.repository.UserAccountRepository;
+import org.revizit.rest.api.AuthApiDelegate;
 import org.revizit.rest.model.AuthenticationRequest;
 import org.revizit.rest.model.AuthenticationResponse;
 import org.revizit.security.JwtService;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service

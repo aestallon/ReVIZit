@@ -1,10 +1,9 @@
 import {CanActivateFn, RedirectFunction, Router} from '@angular/router';
-import {computed, effect, Inject, inject, signal} from '@angular/core';
+import {inject} from '@angular/core';
 import {HttpEventType, HttpInterceptorFn} from '@angular/common/http';
-import {lastValueFrom, tap} from 'rxjs';
-import {AuthService} from '../../api/revizit';
+import {tap} from 'rxjs';
+import {UserService} from '../service/user.service';
 
-const TOKEN_KEY = 'revizit-token';
 
 // Use something like this for redirection if necessary:
 export const AUTH_REDIRECT: RedirectFunction = it => {
@@ -37,69 +36,4 @@ export const INTERCEPTOR_RESPONSE: HttpInterceptorFn = (req, next) => {
 
     }
   }));
-}
-
-export const onLogout: (router: Router) => Promise<void> = async (router) => {
-  localStorage.removeItem(TOKEN_KEY);
-  await router.navigateByUrl('');
-}
-
-@Inject({providedIn: 'root'})
-export class UserService {
-
-  private readonly token = signal<string | null>(null);
-  private readonly api = inject(AuthService);
-  private readonly router = inject(Router);
-  private readonly userEffect = effect(() => {
-    console.log('User effect triggered');
-    if (this.isAuthenticated()) {
-      // TODO: fetch user data from API here
-      // this.api.getUser().subscribe(user => this.user.set(user));
-    } else {
-      this.clearToken();
-    }
-  });
-
-  public readonly isAuthenticated = computed(() => !!this.token());
-
-  constructor() {
-    this.token.set(localStorage.getItem(TOKEN_KEY));
-  }
-
-  public getToken(): string | null {
-    return this.token();
-  }
-
-  public clearToken(): void {
-    this.token.set(null);
-    localStorage.removeItem(TOKEN_KEY);
-  }
-
-  private setToken(token: string): void {
-    this.token.set(token);
-    localStorage.setItem(TOKEN_KEY, token);
-  }
-
-  public async logOut(): Promise<void> {
-    this.clearToken();
-    await this.router.navigateByUrl('');
-  }
-
-  public async logIn(username: string, password: string): Promise<boolean> {
-    try {
-      const {token} = await lastValueFrom(this.api.login({username, password}));
-      if (!token) {
-        return false;
-      }
-
-      this.setToken(token);
-      return true;
-
-    } catch (e) {
-      return false;
-    }
-
-  }
-
-
 }
