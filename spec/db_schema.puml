@@ -1,0 +1,47 @@
+@startuml
+'https://plantuml.com/class-diagram
+entity user_account {
+id : int username : varchar(255)
+email : varchar(255)
+display_name : varchar(255)
+}
+
+entity water_state {
+id : int empty_cnt : int
+full_cnt : int
+curr_pct : int
+curr_flav : int
+created_at : timestamp
+report : int
+}
+
+enum report_type {
+BALLOON_CHANGE,
+SET_PERCENTAGE,
+BALLOON_REFILL
+}
+entity water_report {
+kind : report_type
+val : int
+reported_at : timestamp
+reported_by : int
+approved_at : timestamp
+approved_by : int
+}
+entity water_flavour {
+id : int
+name : text
+}
+entity flavour_request {
+id : int
+name : text
+submitted_at : timestamp
+submitted_by : int
+}
+water_state::report --> water_report
+water_state::reported_by --> user_account
+water_state::curr_flav --> water_flavour
+water_report::reported_by --> user_account
+water_report::approved_by --> user_account
+flavour_request::submitted_by --> user_account
+@enduml

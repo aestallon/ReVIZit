@@ -2,6 +2,7 @@ plugins {
   id 'java'
   id 'org.springframework.boot' version '4.0.1'
   id 'io.spring.dependency-management' version '1.1.7'
+  id 'org.openapi.generator' version '7.17.0'
 }
 
 group = 'org.revizit'
@@ -31,6 +32,11 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-mail'
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+  implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
+  implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
+  implementation 'io.swagger.core.v3:swagger-annotations:2.2.41'
+
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
   developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
@@ -51,4 +57,28 @@ dependencies {
 
 tasks.named('test') {
   useJUnitPlatform()
+}
+
+openApiGenerate {
+  generatorName = "spring"
+  inputSpec = "$rootDir/spec/revizit-api.yaml".toString()
+  outputDir = "$rootDir/backend".toString()
+  apiPackage = "org.revizit.rest.api"
+  modelPackage = "org.revizit.rest.model"
+  configOptions = [
+    delegatePattern        : "true",
+    fullJavaUtil           : "true",
+    library                : "spring-boot",
+    openApiNullable        : "false",
+    useOptional            : "false",
+    useSwaggerUI           : "true",
+    hideGenerationTimestamp: "true",
+    useSpringBoot3         : "true",
+    useTags                : "true",
+  ]
+  globalProperties = [
+    apis  : "",
+    models: "",
+    supportingFiles: 'ApiUtil.java'
+  ]
 }

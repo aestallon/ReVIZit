@@ -1,0 +1,69 @@
+openapi: 3.0.1
+info:
+  title: ThreadScape API
+  version: 1.0.0
+tags:
+  - name: Auth
+    description: Authentication stuff
+  - name: Actuator
+    description: Spring Boot Actuator endpoints
+  - name: Project
+    description: Stuff belonging to project management
+  - name: Profile
+    description: User profile related stuff
+  - name: Comment
+    description: Comment sections
+paths:
+
+  # Auth
+  /auth/login:
+    post:
+      summary: Attempts authentication.
+      description: |
+        Submits an username-password authentication request for login purposes.
+      tags:
+        - Auth
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticationResponse"
+  /auth:
+    get:
+      summary: Checks for authentication.
+      description: |
+        Pings the server with the authentication token included as a bearer token to check
+        for its validity.
+      tags:
+        - Auth
+      operationId: isAuthenticated
+      responses:
+        '200':
+          description: Ok
+        '403':
+          description: Unauthorized
+
+components:
+  schemas:
+    AuthenticationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [ username, password ]
+    AuthenticationResponse:
+      type: object
+      properties:
+        token:
+          type: string
