@@ -28,7 +28,7 @@ import jakarta.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.17.0")
 @Controller
-@RequestMapping("${openapi.threadScape.base-path:}")
+@RequestMapping("${openapi.reVIZit.base-path:}")
 public class AuthApiController implements AuthApi {
 
     private final AuthApiDelegate delegate;

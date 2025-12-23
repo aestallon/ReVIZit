@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: ThreadScape API
+  title: ReVIZit API
   version: 1.0.0
 tags:
   - name: Auth
