@@ -77,6 +77,10 @@ import { PrimeIcons } from 'primeng/api';
     </header>
   `,
   styles: `
+    :host {
+      display: block;
+    }
+
     .header-container {
       display: flex;
       justify-content: space-between;
