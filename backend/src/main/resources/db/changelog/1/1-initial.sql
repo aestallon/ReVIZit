@@ -33,7 +33,7 @@ create table water_report
 (
     id          serial primary key,
     kind        report_type                 not null,
-    val         int,
+    val         int                         not null,
     reported_at timestamp without time zone not null default now(),
     reported_by int                         not null references user_account,
     approved_at timestamp without time zone,
