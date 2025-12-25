@@ -7,6 +7,7 @@ import {FormsModule} from '@angular/forms';
 import {Message} from 'primeng/message';
 import {Router} from '@angular/router';
 import {UserService} from '../service/user.service';
+import {NavigationService} from '../service/navigation.service';
 
 @Component({
   selector: 'app-login',
@@ -105,6 +106,7 @@ import {UserService} from '../service/user.service';
       .p-password input {
         width: 100%;
       }
+
       .p-card-title {
         text-align: center;
         margin-bottom: 1rem;
@@ -120,10 +122,13 @@ export class Login {
   private readonly service = inject(UserService);
   private readonly router = inject(Router);
 
+  private readonly navigation = inject(NavigationService);
+
   username = '';
   password = '';
   loading = signal(false);
   error = signal<string | undefined>(undefined);
+
 
   async onLogin() {
     if (!this.username || !this.password) return;
@@ -134,7 +139,7 @@ export class Login {
     try {
       const success = await this.service.logIn(this.username, this.password);
       if (success) {
-        await this.router.navigateByUrl('/');
+        await this.router.navigateByUrl(this.navigation.wantsToMakeAReport ? '/create-report' : '/');
       } else {
         this.error.set('Invalid username or password');
       }

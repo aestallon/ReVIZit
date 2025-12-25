@@ -3,11 +3,13 @@ import {RouterOutlet} from '@angular/router';
 import {Header} from './component/header';
 import {Footer} from './component/footer';
 import {WaterBackground} from './component/water-background';
+import {Toast} from 'primeng/toast';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer, WaterBackground],
+  imports: [RouterOutlet, Header, Footer, WaterBackground, Toast],
   template: `
+    <p-toast></p-toast>
     <app-water-background></app-water-background>
     <app-header></app-header>
     <main class="app-main">
@@ -27,6 +29,7 @@ import {WaterBackground} from './component/water-background';
       padding: 2rem;
       position: relative;
       z-index: 1;
+      justify-content: center;
     }
   `,
 })
