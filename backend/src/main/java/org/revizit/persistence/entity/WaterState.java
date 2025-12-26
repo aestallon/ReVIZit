@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import org.revizit.rest.model.WaterStateDetail;
+import org.revizit.rest.model.WaterStateDto;
 
 @Entity
 @Table(name = "water_state")
@@ -39,5 +42,55 @@ public class WaterState {
   @OneToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "report")
   private WaterReport report;
+
+  public WaterStateDto toDto() {
+    return new WaterStateDto()
+        .emptyGallons(emptyCnt)
+        .fullGallons(fullCnt)
+        .waterLevel(currPct)
+        .reportedAt(createdAt.atOffset(ZoneOffset.UTC));
+  }
+
+  public WaterStateDetail toDetail() {
+    final var reportedBy = report.getReportedBy();
+    final var reporter = reportedBy != null ? reportedBy.getUsername() : "anonymous";
+    return new WaterStateDetail()
+        .waterState(toDto())
+        .id(id.longValue())
+        .reportedBy(reporter);
+  }
+
+  public WaterState accept(WaterReport report) {
+    final var state = switch (report.getKind()) {
+      case SET_PERCENTAGE -> {
+        final var newState = new WaterState();
+        newState.setCurrFlav(currFlav);
+        newState.setEmptyCnt(emptyCnt);
+        newState.setFullCnt(fullCnt);
+        newState.setCurrPct(report.getVal());
+        yield newState;
+      }
+      case BALLOON_CHANGE -> {
+        final var newState = new WaterState();
+        // FIXME: This has to be in the report!
+        newState.setCurrFlav(currFlav);
+        newState.setEmptyCnt(emptyCnt + 1);
+        newState.setFullCnt(fullCnt - 1);
+        newState.setCurrPct(100);
+        yield newState;
+      }
+      case BALLOON_REFILL -> {
+        final var newState = new WaterState();
+        newState.setCurrFlav(currFlav);
+        newState.setEmptyCnt(0);
+        newState.setFullCnt(fullCnt + emptyCnt);
+        newState.setCurrPct(currPct);
+        yield newState;
+      }
+    };
+    state.setReport(report);
+    state.setCreatedAt(report.getReportedAt());
+    return state;
+  }
 
 }
