@@ -9,7 +9,7 @@ import {Toast} from 'primeng/toast';
   selector: 'app-root',
   imports: [RouterOutlet, Header, Footer, WaterBackground, Toast],
   template: `
-    <p-toast></p-toast>
+    <p-toast position="bottom-right"></p-toast>
     <app-water-background></app-water-background>
     <app-header></app-header>
     <main class="app-main">

@@ -6,6 +6,7 @@ import {WaterReportDetail, WaterReportDto, WaterReportKind} from '../../api/revi
 import {DatePipe, NgClass} from '@angular/common';
 import {Button} from 'primeng/button';
 import {PrimeIcons} from 'primeng/api';
+import {Card} from 'primeng/card';
 
 @Component({
   selector: 'app-reports',
@@ -13,69 +14,94 @@ import {PrimeIcons} from 'primeng/api';
     <div class="reports-container">
       <div class="reports-header">
         <h1>Pending Reports</h1>
+        <div class="reports-description">
+          <p>The table below shows the currently pending reports in chronological order.</p>
+          <p>You may reject any of them by clicking the <i
+            class="pi pi-times-circle"></i><b>Reject</b> button for the corresponding row, or accept
+            them by clicking <i class="pi pi-check-circle"></i><b>Accept</b>.</p>
+          <p><strong>When you accept a report, you automatically accept all other older reports
+            too!</strong></p>
+        </div>
       </div>
-      <div class="reports-controls">
+      <p-card class="reports-table">
+        <p-table [value]="pendingReports()"
+                 dataKey="id"
+                 [rowHover]="true"
+                 [loading]="loading()" class="reports-table">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Details</th>
+              <th>Reported By</th>
+              <th>Reported At</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
 
-      </div>
-      <p-table [value]="pendingReports()"
-               dataKey="id"
-               [rowHover]="true"
-               [loading]="loading()">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Reported At</th>
-            <th>Reported By</th>
-            <th>Details</th>
-            <th>Actions</th>
-          </tr>
-        </ng-template>
+          <ng-template pTemplate="body"
+                       let-report
+                       let-rowIndex="rowIndex">
+            <tr [ngClass]="rowClasses(report, rowIndex)"
+                (mouseleave)="clearHover()">
+              <td [ngClass]="descriptionClasses(report)">{{ reportDescription(report) }}</td>
+              <td>{{ report.reportedBy || 'anonymous' }}</td>
+              <td>{{ report.reportedAt | date:'medium' }}</td>
+              <td class="row-controls">
+                <p-button label="Reject"
+                          severity="warn"
+                          [icon]="PrimeIcons.TIMES_CIRCLE"
+                          [disabled]="loading()"
+                          (mouseenter)="hoverReject(report)"
+                          (onClick)="performReject(report)">
+                </p-button>
+                <p-button label="Accept"
+                          severity="primary"
+                          [icon]="PrimeIcons.CHECK_CIRCLE"
+                          [disabled]="loading()"
+                          (mouseenter)="hoverAccept(report)"
+                          (onClick)="performAccept(report)">
+                </p-button>
+              </td>
+            </tr>
+          </ng-template>
 
-        <ng-template pTemplate="body"
-                     let-report
-                     let-rowIndex="rowIndex">
-          <tr [ngClass]="rowClasses(report, rowIndex)"
-              (mouseleave)="clearHover()">
-            <td>{{ report.reportedAt | date:'medium' }}</td>
-            <td>{{ report.reportedBy || 'anonymous' }}</td>
-            <td>{{ reportDescription(report) }}</td>
-            <td>
-              <p-button label="Reject"
-                        severity="warn"
-                        [icon]="PrimeIcons.TIMES_CIRCLE"
-                        (mouseenter)="hoverReject(report)"
-                        (onClick)="performReject(report)">
-              </p-button>
-              <p-button label="Accept"
-                        severity="primary"
-                        [icon]="PrimeIcons.CHECK_CIRCLE"
-                        (mouseenter)="hoverAccept(report)"
-                        (onClick)="performAccept(report)">
-              </p-button>
-            </td>
-          </tr>
-        </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td
+                colspan="4">{{ service.pendingReportError() ? 'Error loading pending reports' : 'No pending reports' }}
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
 
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td
-              colspan="4">{{ service.pendingReportError() ? 'Error loading pending reports' : 'No pending reports' }}
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
     </div>
   `,
   imports: [
     TableModule,
     DatePipe,
     Button,
-    NgClass
+    NgClass,
+    Card
   ],
   styles: `
     .reports-container {
       display: flex;
       flex-direction: column;
-      padding: 0em 10em;
+    }
+
+    .reports-header {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reports-description {
+      align-self: center;
+    }
+
+    :host ::ng-deep .reports-table {
+      align-self: center;
+      flex: 1
+
     }
 
     .row-accept-hover {
@@ -84,6 +110,15 @@ import {PrimeIcons} from 'primeng/api';
 
     .row-reject-hover {
       background-color: rgba(255, 193, 7, 0.25) !important; /* orange */
+    }
+
+    .row-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .unique-report {
+      font-weight: 800;
     }
   `
 })
@@ -112,9 +147,9 @@ export class Reports {
       case WaterReportKind.PERCENTAGE:
         return `Percentage: ${wr.value ?? '—'}%`;
       case WaterReportKind.SWAP:
-        return `Swap (${this.service.waterFlavours().get(wr.flavourId!)?.name ?? 'Unknown'} flavour)`;
+        return `New gallon (${this.service.waterFlavours().get(wr.flavourId!)?.name ?? 'Unknown'} flavour)`;
       case WaterReportKind.REFILL:
-        return 'Refill';
+        return 'Empty gallons refilled';
       default:
         return '';
     }
@@ -155,6 +190,10 @@ export class Reports {
     }
 
     return {};
+  }
+
+  descriptionClasses(report: WaterReportDetail) {
+    return WaterReportKind.PERCENTAGE !== report.waterReport.kind ? {'unique-report': true} : {};
   }
 
   performReject(dto: WaterReportDetail) {

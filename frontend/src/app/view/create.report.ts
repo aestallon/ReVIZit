@@ -21,81 +21,47 @@ import {WaterReportKind} from '../../api/revizit';
 @Component({
   selector: 'app-create-report',
   template: `
-    <p-stepper [value]="1" [linear]="true" class="report-container">
-      <p-step-list>
-        <p-step [value]="1">Report Type</p-step>
-        <p-step [value]="2">Submit</p-step>
-      </p-step-list>
-      <p-step-panels>
-        <p-step-panel [value]="1">
-          <ng-template #content let-activateCallback="activateCallback">
-            <p-card header="What kind of report would you like to make?">
-              <div class="type-card">
-                <p-select-button [options]="typeFormOptions" class="type-select"
-                                 [formControl]="type"
-                                 optionLabel="label"
-                                 optionValue="value"
-                                 [invalid]="type.invalid">
-                </p-select-button>
-                <div>{{ typeDescription() }}</div>
-                <p-button [disabled]="!type.value || type.value.length < 0"
-                          label="Next"
-                          severity="primary"
-                          class="next-btn"
-                          [icon]="PrimeIcons.ARROW_RIGHT"
-                          (onClick)="activateCallback(2)">
-                </p-button>
-              </div>
-            </p-card>
-          </ng-template>
-        </p-step-panel>
-        <p-step-panel [value]="2">
-          <ng-template #content let-activateCallback="activateCallback">
-            <p-card [header]="confirmTitle()">
-              <div class="type-card">
-                @if (selectedType() === WaterReportKind.PERCENTAGE) {
-                  <app-water-gallon [(waterLevel)]="waterLevel"
-                                    [editable]="true"></app-water-gallon>
-                  <div>
-                    Select a percentage by clicking on the picture above, or manually entering the
-                    value below:
-                  </div>
-                  <p-input-number [(ngModel)]="waterLevel"
-                                  inputId="minmax"
-                                  mode="decimal"
-                                  suffix="%"
-                                  [invalid]="waterLevel() < 0 || waterLevel() > 100"
-                                  [min]="0"
-                                  [max]="100">
-                  </p-input-number>
-                } @else if (selectedType() === WaterReportKind.SWAP) {
-                  <div><b>A new gallon has been inserted into the dispenser.</b></div>
-                } @else if (selectedType() === WaterReportKind.REFILL) {
-                  <div><b>All empty gallons have been refilled.</b></div>
-                } @else {
-                  ERROR
-                }
-                <div class="confirm-controls">
-                  <p-button label="Back"
-                            severity="secondary"
-                            [icon]="PrimeIcons.ARROW_LEFT"
-                            (onClick)="activateCallback(1)">
-                  </p-button>
-                  <p-button label="Submit"
-                            severity="primary"
-                            class="next-btn"
-                            [loading]="submitting()"
-                            [disabled]="waterLevel() < 0 || waterLevel() > 100 || submitting()"
-                            [icon]="PrimeIcons.ARROW_CIRCLE_RIGHT"
-                            (onClick)="submitReport()">
-                  </p-button>
-                </div>
-              </div>
-            </p-card>
-          </ng-template>
-        </p-step-panel>
-      </p-step-panels>
-    </p-stepper>
+    <p-card header="What kind of report would you like to make?">
+      <div class="type-card">
+        <p-select-button [options]="typeFormOptions" class="type-select"
+                         [formControl]="type"
+                         optionLabel="label"
+                         optionValue="value"
+                         [invalid]="type.invalid">
+        </p-select-button>
+        <div>{{ typeDescription() }}</div>
+        @if (selectedType() === WaterReportKind.PERCENTAGE) {
+          <app-water-gallon [(waterLevel)]="waterLevel"
+                            [editable]="true"></app-water-gallon>
+          <div>
+            Select a percentage by clicking on the picture above, or manually entering the
+            value below:
+          </div>
+          <p-input-number [(ngModel)]="waterLevel"
+                          inputId="minmax"
+                          mode="decimal"
+                          suffix="%"
+                          [invalid]="waterLevel() < 0 || waterLevel() > 100"
+                          [min]="0"
+                          [max]="100">
+          </p-input-number>
+        } @else if (selectedType() === WaterReportKind.SWAP) {
+          <div><b>A new gallon has been inserted into the dispenser.</b></div>
+        } @else if (selectedType() === WaterReportKind.REFILL) {
+          <div><b>All empty gallons have been refilled.</b></div>
+        }
+        <div class="confirm-controls">
+          <p-button label="Submit"
+                    severity="primary"
+                    class="next-btn"
+                    [loading]="submitting()"
+                    [disabled]="!selectedType() || (selectedType()?.length ?? 0) < 1 || waterLevel() < 0 || waterLevel() > 100 || submitting()"
+                    [icon]="PrimeIcons.ARROW_CIRCLE_RIGHT"
+                    (onClick)="submitReport()">
+          </p-button>
+        </div>
+      </div>
+    </p-card>
   `,
   imports: [
     Stepper,
@@ -118,14 +84,12 @@ import {WaterReportKind} from '../../api/revizit';
       align-self: center;
     }
 
-    .report-container {
-      width: 600px;
-    }
 
     .type-card {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      width: 600px;
     }
 
     .type-select {
@@ -138,7 +102,7 @@ import {WaterReportKind} from '../../api/revizit';
 
     .confirm-controls {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
     }
   `
 })
