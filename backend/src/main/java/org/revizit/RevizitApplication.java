@@ -1,6 +1,7 @@
 package org.revizit;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import org.revizit.persistence.entity.UserAccount;
 import org.revizit.persistence.entity.WaterFlavour;
@@ -8,10 +9,18 @@ import org.revizit.persistence.entity.WaterState;
 import org.revizit.persistence.repository.UserAccountRepository;
 import org.revizit.persistence.repository.WaterFlavourRepository;
 import org.revizit.persistence.repository.WaterStateRepository;
+import org.revizit.rest.model.WaterStateDto;
+import org.revizit.service.UserService;
+import org.revizit.service.WaterService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +33,7 @@ public class RevizitApplication {
   }
 
   @Bean
+  @Order(1)
   CommandLineRunner runner(UserAccountRepository userAccountRepository,
                            PasswordEncoder passwordEncoder) {
     return _ -> userAccountRepository
@@ -43,6 +53,7 @@ public class RevizitApplication {
   }
 
   @Bean
+  @Order(2)
   CommandLineRunner runner2(WaterFlavourRepository flavourRepository) {
     return _ -> {
       final var flavourCount = flavourRepository.count();
@@ -59,27 +70,27 @@ public class RevizitApplication {
   }
 
   @Bean
-  CommandLineRunner runner3(WaterStateRepository stateRepository) {
+  @Order(3)
+  CommandLineRunner runner3(UserService userService, WaterService waterService) {
     return _ -> {
-      long stateCount = stateRepository.count();
-      if (stateCount > 0) {
+      final var currState = waterService.currentState();
+      if (currState != null) {
         return;
       }
-      log.info("Initialising default state...");
-      final var state = new WaterState();
-      state.setCurrPct(76);
-      state.setEmptyCnt(3);
-      state.setFullCnt(4);
 
-      final var flavour = new WaterFlavour();
-      flavour.setName("Default");
-      flavour.setId(1);
-      state.setCurrFlav(flavour);
-      state.setCreatedAt(LocalDateTime.now());
-      stateRepository.save(state);
-      log.info("Default state created.");
+      UserDetails foo = userService.loadUserByUsername("foo");
+      SecurityContextHolder.getContext().setAuthentication(
+          new UsernamePasswordAuthenticationToken(foo, null, foo.getAuthorities()));
+      WaterState waterState = waterService.defineState(
+          new WaterStateDto()
+              .fullGallons(4)
+              .emptyGallons(3)
+              .reportedAt(OffsetDateTime.now())
+              .waterLevel(76),
+          1L);
+      SecurityContextHolder.clearContext();
+      log.info("Initialised water state: {}", waterState);
     };
   }
-
 
 }

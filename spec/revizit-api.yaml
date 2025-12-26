@@ -172,17 +172,15 @@ paths:
       operationId: approveWaterReport
       tags:
         - Water
-      parameters:
-        - name: id
-          in: path
-          explode: true
-          description: The ID of the report to approve.
-          required: true
-          schema:
-            type: array
-            items:
-              type: integer
-              format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+                format: int64
       responses:
         '200':
           description: Ok
@@ -200,17 +198,15 @@ paths:
       operationId: rejectWaterReport
       tags:
         - Water
-      parameters:
-        - name: id
-          in: path
-          explode: true
-          description: The ID of the report to approve.
-          required: true
-          schema:
-            type: array
-            items:
-              type: integer
-              format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+                format: int64
       responses:
         '200':
           description: Ok
@@ -354,6 +350,7 @@ components:
           type: string
           format: date-time
           example: "2021-01-01T00:00:00Z"
+      required: [ waterReport, id, reportedAt ]
 
     WaterFlavourDto:
       type: object

@@ -3,17 +3,22 @@ package org.revizit.persistence.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import org.revizit.rest.model.WaterStateDetail;
 import org.revizit.rest.model.WaterStateDto;
+import org.springframework.data.annotation.PersistenceCreator;
 
 @Entity
 @Table(name = "water_state")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class WaterState {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +47,11 @@ public class WaterState {
   @OneToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "report")
   private WaterReport report;
+
+  @PersistenceCreator
+  public WaterState() {
+    // empty for JPA
+  }
 
   public WaterStateDto toDto() {
     return new WaterStateDto()

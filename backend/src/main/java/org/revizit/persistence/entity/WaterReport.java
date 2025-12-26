@@ -3,6 +3,8 @@ package org.revizit.persistence.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
@@ -12,11 +14,14 @@ import org.hibernate.dialect.type.PostgreSQLEnumJdbcType;
 import org.revizit.rest.model.WaterReportDetail;
 import org.revizit.rest.model.WaterReportDto;
 import org.revizit.rest.model.WaterReportKind;
+import org.springframework.data.annotation.PersistenceCreator;
 
 @Entity
 @Table(name = "water_report")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class WaterReport {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,19 +39,36 @@ public class WaterReport {
   @Column(name = "reported_at", nullable = false)
   private LocalDateTime reportedAt;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "reported_by", nullable = false)
   private UserAccount reportedBy;
 
   @Column(name = "approved_at")
   private LocalDateTime approvedAt;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "approved_by")
   private UserAccount approvedBy;
 
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "flavour")
+  private WaterFlavour flavour;
+
+  @Column(name = "rejected_at")
+  private LocalDateTime rejectedAt;
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "rejected_by")
+  private UserAccount rejectedBy;
+
+  @PersistenceCreator
+  public WaterReport() {
+    // empty for JPA
+  }
+
   public WaterReportDetail toDetail() {
     final var reporter = reportedBy != null ? reportedBy.getUsername() : "anonymous";
+    final var flavourId = flavour != null ? flavour.getId() : -1L;
     return new WaterReportDetail()
         .id(id.longValue())
         .reportedAt(reportedAt.atOffset(ZoneOffset.UTC))
@@ -58,7 +80,6 @@ public class WaterReport {
               case SET_PERCENTAGE -> WaterReportKind.PERCENTAGE;
             })
             .value(val)
-            // TODO: FIX
-            .flavourId(1L));
+            .flavourId(flavourId));
   }
 }

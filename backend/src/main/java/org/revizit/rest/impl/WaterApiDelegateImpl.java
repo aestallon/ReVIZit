@@ -2,6 +2,12 @@ package org.revizit.rest.impl;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+import org.revizit.persistence.entity.WaterFlavour;
+import org.revizit.persistence.entity.WaterReport;
+import org.revizit.persistence.entity.WaterState;
 import org.revizit.rest.api.WaterApiDelegate;
 import org.revizit.rest.model.WaterFlavourDto;
 import org.revizit.rest.model.WaterReportDetail;
@@ -31,33 +37,41 @@ public class WaterApiDelegateImpl implements WaterApiDelegate {
 
   @Override
   public ResponseEntity<List<WaterReportDetail>> getPendingWaterReports() {
-    return WaterApiDelegate.super.getPendingWaterReports();
+    return waterService.getPendingReports().stream()
+        .map(WaterReport::toDetail)
+        .collect(collectingAndThen(toList(), ResponseEntity::ok));
   }
 
   @Override
   public ResponseEntity<Void> approveWaterReport(List<Long> id) {
-    return WaterApiDelegate.super.approveWaterReport(id);
+    waterService.acceptReports(id);
+    return ResponseEntity.ok().build();
   }
 
   @Override
   public ResponseEntity<Void> rejectWaterReport(List<Long> id) {
-    return WaterApiDelegate.super.rejectWaterReport(id);
+    waterService.rejectReports(id);
+    return ResponseEntity.ok().build();
   }
 
   @Override
   public ResponseEntity<List<WaterFlavourDto>> getWaterFlavours() {
-    return WaterApiDelegate.super.getWaterFlavours();
+    return waterService.getFlavours().stream()
+        .map(WaterFlavour::toDto)
+        .collect(collectingAndThen(toList(), ResponseEntity::ok));
   }
 
   @Override
   public ResponseEntity<List<WaterStateDetail>> getWaterStates(OffsetDateTime from,
                                                                OffsetDateTime to) {
-    return WaterApiDelegate.super.getWaterStates(from, to);
+    return waterService.stateHistory(from.toLocalDateTime(), to.toLocalDateTime()).stream()
+        .map(WaterState::toDetail)
+        .collect(collectingAndThen(toList(), ResponseEntity::ok));
   }
 
   @Override
   public ResponseEntity<WaterReportDetail> submitWaterReport(WaterReportDto waterReportDto) {
-    final var report = waterService.registerAndAccept(waterReportDto);
+    final var report = waterService.registerReport(waterReportDto);
     return ResponseEntity.ok(report.toDetail());
   }
 

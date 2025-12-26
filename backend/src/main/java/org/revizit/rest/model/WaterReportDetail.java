@@ -24,16 +24,29 @@ import jakarta.annotation.Generated;
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", comments = "Generator version: 7.17.0")
 public class WaterReportDetail {
 
-  private @Nullable WaterReportDto waterReport;
+  private WaterReportDto waterReport;
 
-  private @Nullable Long id;
+  private Long id;
 
   private @Nullable String reportedBy;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  private @Nullable OffsetDateTime reportedAt;
+  private OffsetDateTime reportedAt;
 
-  public WaterReportDetail waterReport(@Nullable WaterReportDto waterReport) {
+  public WaterReportDetail() {
+    super();
+  }
+
+  /**
+   * Constructor with only required parameters
+   */
+  public WaterReportDetail(WaterReportDto waterReport, Long id, OffsetDateTime reportedAt) {
+    this.waterReport = waterReport;
+    this.id = id;
+    this.reportedAt = reportedAt;
+  }
+
+  public WaterReportDetail waterReport(WaterReportDto waterReport) {
     this.waterReport = waterReport;
     return this;
   }
@@ -42,18 +55,18 @@ public class WaterReportDetail {
    * Get waterReport
    * @return waterReport
    */
-  @Valid 
-  @Schema(name = "waterReport", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @NotNull @Valid 
+  @Schema(name = "waterReport", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("waterReport")
-  public @Nullable WaterReportDto getWaterReport() {
+  public WaterReportDto getWaterReport() {
     return waterReport;
   }
 
-  public void setWaterReport(@Nullable WaterReportDto waterReport) {
+  public void setWaterReport(WaterReportDto waterReport) {
     this.waterReport = waterReport;
   }
 
-  public WaterReportDetail id(@Nullable Long id) {
+  public WaterReportDetail id(Long id) {
     this.id = id;
     return this;
   }
@@ -62,14 +75,14 @@ public class WaterReportDetail {
    * Get id
    * @return id
    */
-  
-  @Schema(name = "id", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @NotNull 
+  @Schema(name = "id", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("id")
-  public @Nullable Long getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(@Nullable Long id) {
+  public void setId(Long id) {
     this.id = id;
   }
 
@@ -93,7 +106,7 @@ public class WaterReportDetail {
     this.reportedBy = reportedBy;
   }
 
-  public WaterReportDetail reportedAt(@Nullable OffsetDateTime reportedAt) {
+  public WaterReportDetail reportedAt(OffsetDateTime reportedAt) {
     this.reportedAt = reportedAt;
     return this;
   }
@@ -102,14 +115,14 @@ public class WaterReportDetail {
    * Get reportedAt
    * @return reportedAt
    */
-  @Valid 
-  @Schema(name = "reportedAt", example = "2021-01-01T00:00Z", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @NotNull @Valid 
+  @Schema(name = "reportedAt", example = "2021-01-01T00:00Z", requiredMode = Schema.RequiredMode.REQUIRED)
   @JsonProperty("reportedAt")
-  public @Nullable OffsetDateTime getReportedAt() {
+  public OffsetDateTime getReportedAt() {
     return reportedAt;
   }
 
-  public void setReportedAt(@Nullable OffsetDateTime reportedAt) {
+  public void setReportedAt(OffsetDateTime reportedAt) {
     this.reportedAt = reportedAt;
   }
 

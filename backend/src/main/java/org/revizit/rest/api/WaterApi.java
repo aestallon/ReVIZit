@@ -51,7 +51,7 @@ public interface WaterApi {
      * PUT /report/approve : Approves one or more water reports.
      * Approves one or more water reports. The water reports must be pending approval, form a consecutive list (in chronological order), and must start with the oldest pending report. 
      *
-     * @param id The ID of the report to approve. (required)
+     * @param requestBody  (required)
      * @return Ok (status code 200)
      *         or Bad request (status code 400)
      */
@@ -70,12 +70,13 @@ public interface WaterApi {
     @RequestMapping(
         method = RequestMethod.PUT,
         value = WaterApi.PATH_APPROVE_WATER_REPORT,
-        produces = { "application/json" }
+        produces = { "application/json" },
+        consumes = { "application/json" }
     )
     default ResponseEntity<Void> approveWaterReport(
-        @NotNull @Parameter(name = "id", description = "The ID of the report to approve.", required = true, in = ParameterIn.PATH) @PathVariable("id") List<Long> id
+        @Parameter(name = "request_body", description = "", required = true) @Valid @RequestBody List<Long> requestBody
     ) {
-        return getDelegate().approveWaterReport(id);
+        return getDelegate().approveWaterReport(requestBody);
     }
 
 
@@ -211,7 +212,7 @@ public interface WaterApi {
      * PUT /report/reject : Rejects one or more water reports.
      * Rejects one or more water reports. The water reports must be pending approval. 
      *
-     * @param id The ID of the report to approve. (required)
+     * @param requestBody  (required)
      * @return Ok (status code 200)
      *         or Bad request (status code 400)
      */
@@ -230,12 +231,13 @@ public interface WaterApi {
     @RequestMapping(
         method = RequestMethod.PUT,
         value = WaterApi.PATH_REJECT_WATER_REPORT,
-        produces = { "application/json" }
+        produces = { "application/json" },
+        consumes = { "application/json" }
     )
     default ResponseEntity<Void> rejectWaterReport(
-        @NotNull @Parameter(name = "id", description = "The ID of the report to approve.", required = true, in = ParameterIn.PATH) @PathVariable("id") List<Long> id
+        @Parameter(name = "request_body", description = "", required = true) @Valid @RequestBody List<Long> requestBody
     ) {
-        return getDelegate().rejectWaterReport(id);
+        return getDelegate().rejectWaterReport(requestBody);
     }
 
 

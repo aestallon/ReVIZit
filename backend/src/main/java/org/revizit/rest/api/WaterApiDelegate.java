@@ -37,12 +37,12 @@ public interface WaterApiDelegate {
      * PUT /report/approve : Approves one or more water reports.
      * Approves one or more water reports. The water reports must be pending approval, form a consecutive list (in chronological order), and must start with the oldest pending report. 
      *
-     * @param id The ID of the report to approve. (required)
+     * @param requestBody  (required)
      * @return Ok (status code 200)
      *         or Bad request (status code 400)
      * @see WaterApi#approveWaterReport
      */
-    default ResponseEntity<Void> approveWaterReport(List<Long> id) {
+    default ResponseEntity<Void> approveWaterReport(List<Long> requestBody) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
@@ -149,12 +149,12 @@ public interface WaterApiDelegate {
      * PUT /report/reject : Rejects one or more water reports.
      * Rejects one or more water reports. The water reports must be pending approval. 
      *
-     * @param id The ID of the report to approve. (required)
+     * @param requestBody  (required)
      * @return Ok (status code 200)
      *         or Bad request (status code 400)
      * @see WaterApi#rejectWaterReport
      */
-    default ResponseEntity<Void> rejectWaterReport(List<Long> id) {
+    default ResponseEntity<Void> rejectWaterReport(List<Long> requestBody) {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {

@@ -11,9 +11,9 @@ import { WaterReportDto } from './waterReportDto';
 
 
 export interface WaterReportDetail { 
-    waterReport?: WaterReportDto;
-    id?: number;
+    waterReport: WaterReportDto;
+    id: number;
     reportedBy?: string;
-    reportedAt?: string;
+    reportedAt: string;
 }
 
