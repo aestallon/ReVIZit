@@ -4,7 +4,6 @@ import {Card} from 'primeng/card';
 import {
   FormBuilder,
   FormControl,
-  FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators
@@ -15,6 +14,8 @@ import {MessageService, PrimeIcons} from 'primeng/api';
 import {WaterGallonComponent} from '../component/gallon';
 import {InputNumber} from 'primeng/inputnumber';
 import {Router} from '@angular/router';
+import {RevizitService} from '../service/revizit.service';
+import {WaterReportKind} from '../../api/revizit';
 
 
 @Component({
@@ -52,7 +53,7 @@ import {Router} from '@angular/router';
           <ng-template #content let-activateCallback="activateCallback">
             <p-card [header]="confirmTitle()">
               <div class="type-card">
-                @if (selectedType() === 'waterUsage') {
+                @if (selectedType() === WaterReportKind.PERCENTAGE) {
                   <app-water-gallon [(waterLevel)]="waterLevel"
                                     [editable]="true"></app-water-gallon>
                   <div>
@@ -67,9 +68,9 @@ import {Router} from '@angular/router';
                                   [min]="0"
                                   [max]="100">
                   </p-input-number>
-                } @else if (selectedType() === 'gallonSwap') {
+                } @else if (selectedType() === WaterReportKind.SWAP) {
                   <div><b>A new gallon has been inserted into the dispenser.</b></div>
-                } @else if (selectedType() === 'gallonRefill') {
+                } @else if (selectedType() === WaterReportKind.REFILL) {
                   <div><b>All empty gallons have been refilled.</b></div>
                 } @else {
                   ERROR
@@ -83,7 +84,8 @@ import {Router} from '@angular/router';
                   <p-button label="Submit"
                             severity="primary"
                             class="next-btn"
-                            [disabled]="waterLevel() < 0 || waterLevel() > 100"
+                            [loading]="submitting()"
+                            [disabled]="waterLevel() < 0 || waterLevel() > 100 || submitting()"
                             [icon]="PrimeIcons.ARROW_CIRCLE_RIGHT"
                             (onClick)="submitReport()">
                   </p-button>
@@ -142,22 +144,22 @@ import {Router} from '@angular/router';
 })
 export class CreateReport {
 
-  type = new FormControl('', Validators.required);
-  typeFormOptions: { label: string, value: string }[] = [
-    {label: 'Percentage', value: 'waterUsage'},
-    {label: 'Swap', value: 'gallonSwap'},
-    {label: 'Refill', value: 'gallonRefill'},
+  type = new FormControl<WaterReportKind | null>(null, Validators.required);
+  typeFormOptions: { label: string, value: WaterReportKind }[] = [
+    {label: 'Percentage', value: WaterReportKind.PERCENTAGE},
+    {label: 'Swap', value: WaterReportKind.SWAP},
+    {label: 'Refill', value: WaterReportKind.REFILL},
   ];
 
-  selectedType = signal<string | null>(null);
+  selectedType = signal<WaterReportKind | null>(null);
 
   typeDescription = computed<string | null>(() => {
     switch (this.selectedType()) {
-      case 'waterUsage':
+      case WaterReportKind.PERCENTAGE:
         return 'Report how much water is present in the current gallon.';
-      case 'gallonSwap':
+      case WaterReportKind.SWAP:
         return 'Report a swap: an empty ballon removed and replaced with a full one.';
-      case 'gallonRefill':
+      case WaterReportKind.REFILL:
         return 'All empty gallons have been refilled.';
       default:
         return null;
@@ -166,18 +168,19 @@ export class CreateReport {
 
   confirmTitle = computed<string>(() => {
     switch (this.selectedType()) {
-      case 'waterUsage':
+      case WaterReportKind.PERCENTAGE:
         return 'How Much Water Is in the Gallon?';
       default:
         return 'Confirm Your Report';
     }
   });
 
-  // TODO: Fetch from service!
-  waterLevel = signal(0);
-
   messageService = inject(MessageService);
+  service = inject(RevizitService);
   router = inject(Router);
+
+  submitting = signal(false);
+  waterLevel = signal(this.service.waterState().waterLevel);
 
   constructor(private fb: FormBuilder) {
     this.type.valueChanges.subscribe(value => {
@@ -188,8 +191,26 @@ export class CreateReport {
   protected readonly PrimeIcons = PrimeIcons;
 
   submitReport() {
-    console.log(this.selectedType(), this.waterLevel());
-    this.messageService.add({severity: 'success', summary: 'Success', detail: 'Report submitted successfully!', life: 3000});
-    this.router.navigateByUrl('/home');
+    this.submitting.set(true);
+    this.service.submitWaterReport({
+      value: this.waterLevel(),
+      kind: this.selectedType()!,
+      flavourId: 1,
+    }).then(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Report submitted successfully!',
+        life: 3000
+      });
+      this.submitting.set(false);
+      this.router.navigateByUrl('/home');
+    }).catch(err => {
+      console.error('Error: ', err);
+      this.submitting.set(false);
+    })
+
   }
+
+  protected readonly WaterReportKind = WaterReportKind;
 }

@@ -7,6 +7,8 @@ tags:
     description: Authentication stuff
   - name: Profile
     description: User profile related stuff
+  - name: Water
+    description: Water related stuff
 paths:
 
   # Auth
@@ -72,6 +74,170 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
 
+  /water/current:
+    get:
+      summary: The current water state.
+      tags:
+        - Water
+      description: |
+        Returns the count of full and empty gallons, as well as the water level in the current gallon.
+      operationId: getCurrentWaterState
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaterStateDto'
+        '404':
+          description: Not found
+  /water:
+    get:
+      summary: Get historic water states.
+      tags:
+        - Water
+      description: |
+        Returns a list of water states, ordered by date.
+      operationId: getWaterStates
+      parameters:
+        - name: from
+          in: query
+          description: The earliest date to include in the result.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: The latest date to include in the result.
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaterStateDetail'
+        '403':
+          description: Unauthorized
+
+  /report:
+    post:
+      summary: Submits a water report.
+      description: Submits a water report for the current user (if any).
+      operationId: submitWaterReport
+      tags:
+        - Water
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaterReportDto'
+        required: true
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaterReportDetail'
+        '403':
+          description: Unauthorized
+    get:
+      summary: Returns the pending water reports.
+      description: Returns the pending water reports waiting for approval.
+      operationId: getPendingWaterReports
+      tags:
+        - Water
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaterReportDetail'
+  /report/approve:
+    put:
+      summary: Approves one or more water reports.
+      description: |
+        Approves one or more water reports. The water reports must be pending approval, form a
+        consecutive list (in chronological order), and must start with the oldest pending report.
+      operationId: approveWaterReport
+      tags:
+        - Water
+      parameters:
+        - name: id
+          in: path
+          explode: true
+          description: The ID of the report to approve.
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /report/reject:
+    put:
+      summary: Rejects one or more water reports.
+      description: |
+        Rejects one or more water reports. The water reports must be pending approval.
+      operationId: rejectWaterReport
+      tags:
+        - Water
+      parameters:
+        - name: id
+          in: path
+          explode: true
+          description: The ID of the report to approve.
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /flavour:
+    get:
+      summary: Returns all available water flavours.
+      description: Returns all available water flavours.
+      operationId: getWaterFlavours
+      tags:
+        - Water
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaterFlavourDto'
+
 components:
   schemas:
     AuthenticationRequest:
@@ -113,3 +279,90 @@ components:
         description:
           type: string
       required: [ status, timestamp ]
+
+    WaterStateDto:
+      type: object
+      properties:
+        fullGallons:
+          type: integer
+          minimum: 0
+          format: int32
+          example: 4
+        emptyGallons:
+          type: integer
+          minimum: 0
+          format: int32
+          example: 3
+        waterLevel:
+          minimum: 0
+          maximum: 100
+          type: integer
+          format: int32
+          example: 75
+        reportedAt:
+          type: string
+          format: date-time
+          example: "2021-01-01T00:00:00Z"
+      required: [ fullGallons, emptyGallons, waterLevel, reportedAt ]
+    WaterStateDetail:
+      type: object
+      properties:
+        waterState:
+          $ref: '#/components/schemas/WaterStateDto'
+        id:
+          type: integer
+          format: int64
+          example: 1
+        reportedBy:
+          type: string
+          example: "John Doe"
+      required: [ waterState, id ]
+    WaterReportKind:
+      type: string
+      enum: [ PERCENTAGE, SWAP, REFILL ]
+    WaterReportDto:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/WaterReportKind'
+        value:
+          description: |
+            The level of water in the gallon, as a percentage. Only applicable for PERCENTAGE reports.
+          type: integer
+          format: int32
+          example: 75
+        flavourId:
+          description: |
+            The flavour of the new gallon. Only applicable for SWAP reports.
+          type: integer
+          format: int64
+          example: 1
+      required: [ kind ]
+    WaterReportDetail:
+      type: object
+      properties:
+        waterReport:
+          $ref: '#/components/schemas/WaterReportDto'
+        id:
+          type: integer
+          format: int64
+          example: 1
+        reportedBy:
+          type: string
+          example: "John Doe"
+        reportedAt:
+          type: string
+          format: date-time
+          example: "2021-01-01T00:00:00Z"
+
+    WaterFlavourDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Regular"
+      required: [ id, name ]

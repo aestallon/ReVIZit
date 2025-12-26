@@ -1,18 +1,18 @@
 import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {WaterGallonComponent} from '../component/gallon';
-import {MockService} from '../mock/mock';
 import {DatePipe} from '@angular/common';
 import {Button} from 'primeng/button';
 import {PrimeIcons} from 'primeng/api';
 import {UserService} from '../service/user.service';
 import {NavigationService} from '../service/navigation.service';
 import {Router} from '@angular/router';
+import {RevizitService} from '../service/revizit.service';
 
 @Component({
   selector: 'app-home',
   template: `
     <div class="home-container">
-      <app-water-gallon class="gallon-display" [(waterLevel)]="waterLevel"></app-water-gallon>
+      <app-water-gallon class="gallon-display" [waterLevel]="waterLevel()"></app-water-gallon>
       <div class="home-description">
         <h1>Current water level is <span [class]="percentageStyle()">{{ waterLevel() }}%</span></h1>
         <h2>There are <b>{{ fullCount() }}</b> full gallons,</h2>
@@ -215,16 +215,19 @@ import {Router} from '@angular/router';
 })
 export class Home implements OnInit {
 
-  private readonly mockService = inject(MockService);
+  private readonly service = inject(RevizitService);
 
   private readonly userService = inject(UserService);
   private readonly navigationService = inject(NavigationService);
   private readonly router = inject(Router);
 
-  waterLevel = signal(0);
-  emptyCount = signal(0);
-  fullCount = signal(0);
-  reportDate = signal(new Date());
+  waterLevel = computed(() => this.service.waterState().waterLevel);
+  emptyCount = computed(() => this.service.waterState().emptyGallons);
+  fullCount = computed(() => this.service.waterState().fullGallons);
+  reportDate = computed(() => {
+    const dateStr = this.service.waterState().reportedAt;
+    return new Date(dateStr);
+  });
 
   percentageStyle = computed<string>(() => {
     const level = this.waterLevel();
@@ -253,12 +256,7 @@ export class Home implements OnInit {
 
 
   constructor() {
-    this.mockService.getCurrentState().then(state => {
-      this.waterLevel.set(state.percentage);
-      this.emptyCount.set(state.emptyCount);
-      this.fullCount.set(state.fullCount);
-      this.reportDate.set(state.timestamp);
-    });
+    this.service.loadWaterState();
   }
 
   ngOnInit(): void {
