@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.time.OffsetDateTime;
+import org.revizit.rest.model.WaterFlavourDto;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.lang.Nullable;
 import java.time.OffsetDateTime;
@@ -32,6 +33,8 @@ public class WaterStateDto {
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private OffsetDateTime reportedAt;
 
+  private WaterFlavourDto flavour;
+
   public WaterStateDto() {
     super();
   }
@@ -39,11 +42,12 @@ public class WaterStateDto {
   /**
    * Constructor with only required parameters
    */
-  public WaterStateDto(Integer fullGallons, Integer emptyGallons, Integer waterLevel, OffsetDateTime reportedAt) {
+  public WaterStateDto(Integer fullGallons, Integer emptyGallons, Integer waterLevel, OffsetDateTime reportedAt, WaterFlavourDto flavour) {
     this.fullGallons = fullGallons;
     this.emptyGallons = emptyGallons;
     this.waterLevel = waterLevel;
     this.reportedAt = reportedAt;
+    this.flavour = flavour;
   }
 
   public WaterStateDto fullGallons(Integer fullGallons) {
@@ -130,6 +134,26 @@ public class WaterStateDto {
     this.reportedAt = reportedAt;
   }
 
+  public WaterStateDto flavour(WaterFlavourDto flavour) {
+    this.flavour = flavour;
+    return this;
+  }
+
+  /**
+   * Get flavour
+   * @return flavour
+   */
+  @NotNull @Valid 
+  @Schema(name = "flavour", requiredMode = Schema.RequiredMode.REQUIRED)
+  @JsonProperty("flavour")
+  public WaterFlavourDto getFlavour() {
+    return flavour;
+  }
+
+  public void setFlavour(WaterFlavourDto flavour) {
+    this.flavour = flavour;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -142,12 +166,13 @@ public class WaterStateDto {
     return Objects.equals(this.fullGallons, waterStateDto.fullGallons) &&
         Objects.equals(this.emptyGallons, waterStateDto.emptyGallons) &&
         Objects.equals(this.waterLevel, waterStateDto.waterLevel) &&
-        Objects.equals(this.reportedAt, waterStateDto.reportedAt);
+        Objects.equals(this.reportedAt, waterStateDto.reportedAt) &&
+        Objects.equals(this.flavour, waterStateDto.flavour);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(fullGallons, emptyGallons, waterLevel, reportedAt);
+    return Objects.hash(fullGallons, emptyGallons, waterLevel, reportedAt, flavour);
   }
 
   @Override
@@ -158,6 +183,7 @@ public class WaterStateDto {
     sb.append("    emptyGallons: ").append(toIndentedString(emptyGallons)).append("\n");
     sb.append("    waterLevel: ").append(toIndentedString(waterLevel)).append("\n");
     sb.append("    reportedAt: ").append(toIndentedString(reportedAt)).append("\n");
+    sb.append("    flavour: ").append(toIndentedString(flavour)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -91,6 +91,29 @@ paths:
                 $ref: '#/components/schemas/WaterStateDto'
         '404':
           description: Not found
+    post:
+      summary: Defines the current water state.
+      tags:
+        - Water
+      description: |
+        Explicitly set the current water state.
+      operationId: defineCurrentWaterState
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaterStateDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaterStateDetail'
+        '400':
+          description: Bad Request
+
   /water:
     get:
       summary: Get historic water states.
@@ -233,6 +256,74 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/WaterFlavourDto'
+    post:
+      summary: Creates a new flavour
+      description: Creates a new flavour.
+      operationId: createWaterFlavour
+      tags:
+        - Water
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaterFlavourDto'
+        '409':
+          description: Flavour already exists
+
+  /flavour/{id}:
+    delete:
+      summary: Deletes a water flavour.
+      description: Deletes a water flavour.
+      operationId: deleteWaterFlavour
+      tags:
+        - Water
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Ok
+        '409':
+          description: Flavour in use
+    put:
+      summary: Updates a water flavour.
+      description: Updates a water flavour.
+      operationId: updateWaterFlavour
+      tags:
+        - Water
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaterFlavourDto'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaterFlavourDto'
+
 
 components:
   schemas:
@@ -299,7 +390,9 @@ components:
           type: string
           format: date-time
           example: "2021-01-01T00:00:00Z"
-      required: [ fullGallons, emptyGallons, waterLevel, reportedAt ]
+        flavour:
+          $ref: '#/components/schemas/WaterFlavourDto'
+      required: [ fullGallons, emptyGallons, waterLevel, reportedAt, flavour ]
     WaterStateDetail:
       type: object
       properties:

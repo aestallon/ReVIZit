@@ -2,9 +2,11 @@ package org.revizit.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.revizit.persistence.entity.ReportType;
 import org.revizit.persistence.entity.WaterFlavour;
@@ -163,6 +165,32 @@ public class WaterService {
   public Optional<WaterFlavour> getFlavour(Long id) {
     Objects.requireNonNull(id, "Flavour id cannot be null!");
     return waterFlavourRepository.findById(id.intValue());
+  }
+
+  public WaterFlavour createFlavour(final String name) {
+    final var flavour = new WaterFlavour();
+    flavour.setName(name);
+    return waterFlavourRepository.save(flavour);
+  }
+
+  public void deleteFlavour(final Long id) {
+    Set<Integer> usedFlavourIds = waterFlavourRepository.findUsedFlavourIds();
+    if (usedFlavourIds.contains(id.intValue())) {
+      throw new IllegalArgumentException("Flavour is used!");
+    }
+
+    waterFlavourRepository.deleteById(id.intValue());
+  }
+
+  public void renameFlavour(final Long id, final String newName) {
+    final var flavour = waterFlavourRepository.findById(id.intValue()).orElseThrow();
+    flavour.setName(newName);
+    waterFlavourRepository.save(flavour);
+  }
+
+  public Set<WaterFlavour> getFlavoursInUse() {
+    return new HashSet<>(
+        waterFlavourRepository.findAllById(waterFlavourRepository.findUsedFlavourIds()));
   }
 
 }

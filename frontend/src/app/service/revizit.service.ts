@@ -19,6 +19,10 @@ export class RevizitService {
     waterLevel: 0,
     fullGallons: 0,
     reportedAt: '',
+    flavour: {
+      id: 0,
+      name: '<<Unknown>>',
+    }
   })
 
   readonly pendingReports = signal<Array<WaterReportDetail>>([]);

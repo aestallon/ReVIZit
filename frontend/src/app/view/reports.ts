@@ -96,11 +96,13 @@ import {Card} from 'primeng/card';
 
     .reports-description {
       align-self: center;
+      padding-bottom: 1em;
+      /*width: 600px;*/
     }
 
-    :host ::ng-deep .reports-table {
+    .reports-table {
       align-self: center;
-      flex: 1
+      /*flex: 1;*/
 
     }
 
@@ -112,13 +114,19 @@ import {Card} from 'primeng/card';
       background-color: rgba(255, 193, 7, 0.25) !important; /* orange */
     }
 
-    .row-controls {
-      display: flex;
-      gap: 0.5rem;
+    .row-controls p-button {
+      padding-right: 1em;
     }
 
     .unique-report {
       font-weight: 800;
+    }
+
+    @media (max-width: 768px) {
+      .row-controls p-button {
+        padding-right: unset;
+        padding-bottom: 1em;
+      }
     }
   `
 })

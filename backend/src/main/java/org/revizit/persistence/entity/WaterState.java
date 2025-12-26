@@ -58,7 +58,8 @@ public class WaterState {
         .emptyGallons(emptyCnt)
         .fullGallons(fullCnt)
         .waterLevel(currPct)
-        .reportedAt(createdAt.atOffset(ZoneOffset.UTC));
+        .reportedAt(createdAt.atOffset(ZoneOffset.UTC))
+        .flavour(report.getFlavour().toDto());
   }
 
   public WaterStateDetail toDetail() {

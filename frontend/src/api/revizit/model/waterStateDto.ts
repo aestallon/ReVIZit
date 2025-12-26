@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { WaterFlavourDto } from './waterFlavourDto';
 
 
 export interface WaterStateDto { 
@@ -14,5 +15,6 @@ export interface WaterStateDto {
     emptyGallons: number;
     waterLevel: number;
     reportedAt: string;
+    flavour: WaterFlavourDto;
 }
 

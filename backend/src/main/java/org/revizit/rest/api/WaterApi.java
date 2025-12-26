@@ -80,6 +80,104 @@ public interface WaterApi {
     }
 
 
+    String PATH_CREATE_WATER_FLAVOUR = "/flavour";
+    /**
+     * POST /flavour : Creates a new flavour
+     * Creates a new flavour.
+     *
+     * @param body  (required)
+     * @return Created (status code 201)
+     *         or Flavour already exists (status code 409)
+     */
+    @Operation(
+        operationId = "createWaterFlavour",
+        summary = "Creates a new flavour",
+        description = "Creates a new flavour.",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Created", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = WaterFlavourDto.class))
+            }),
+            @ApiResponse(responseCode = "409", description = "Flavour already exists")
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.POST,
+        value = WaterApi.PATH_CREATE_WATER_FLAVOUR,
+        produces = { "application/json" },
+        consumes = { "application/json" }
+    )
+    default ResponseEntity<WaterFlavourDto> createWaterFlavour(
+        @Parameter(name = "body", description = "", required = true) @Valid @RequestBody String body
+    ) {
+        return getDelegate().createWaterFlavour(body);
+    }
+
+
+    String PATH_DEFINE_CURRENT_WATER_STATE = "/water/current";
+    /**
+     * POST /water/current : Defines the current water state.
+     * Explicitly set the current water state. 
+     *
+     * @param waterStateDto  (required)
+     * @return Created (status code 201)
+     *         or Bad Request (status code 400)
+     */
+    @Operation(
+        operationId = "defineCurrentWaterState",
+        summary = "Defines the current water state.",
+        description = "Explicitly set the current water state. ",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Created", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = WaterStateDetail.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad Request")
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.POST,
+        value = WaterApi.PATH_DEFINE_CURRENT_WATER_STATE,
+        produces = { "application/json" },
+        consumes = { "application/json" }
+    )
+    default ResponseEntity<WaterStateDetail> defineCurrentWaterState(
+        @Parameter(name = "WaterStateDto", description = "", required = true) @Valid @RequestBody WaterStateDto waterStateDto
+    ) {
+        return getDelegate().defineCurrentWaterState(waterStateDto);
+    }
+
+
+    String PATH_DELETE_WATER_FLAVOUR = "/flavour/{id}";
+    /**
+     * DELETE /flavour/{id} : Deletes a water flavour.
+     * Deletes a water flavour.
+     *
+     * @param id  (required)
+     * @return Ok (status code 200)
+     *         or Flavour in use (status code 409)
+     */
+    @Operation(
+        operationId = "deleteWaterFlavour",
+        summary = "Deletes a water flavour.",
+        description = "Deletes a water flavour.",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok"),
+            @ApiResponse(responseCode = "409", description = "Flavour in use")
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.DELETE,
+        value = WaterApi.PATH_DELETE_WATER_FLAVOUR
+    )
+    default ResponseEntity<Void> deleteWaterFlavour(
+        @NotNull @Parameter(name = "id", description = "", required = true, in = ParameterIn.PATH) @PathVariable("id") Long id
+    ) {
+        return getDelegate().deleteWaterFlavour(id);
+    }
+
+
     String PATH_GET_CURRENT_WATER_STATE = "/water/current";
     /**
      * GET /water/current : The current water state.
@@ -272,6 +370,40 @@ public interface WaterApi {
         @Parameter(name = "WaterReportDto", description = "", required = true) @Valid @RequestBody WaterReportDto waterReportDto
     ) {
         return getDelegate().submitWaterReport(waterReportDto);
+    }
+
+
+    String PATH_UPDATE_WATER_FLAVOUR = "/flavour/{id}";
+    /**
+     * PUT /flavour/{id} : Updates a water flavour.
+     * Updates a water flavour.
+     *
+     * @param id  (required)
+     * @param waterFlavourDto  (required)
+     * @return Ok (status code 200)
+     */
+    @Operation(
+        operationId = "updateWaterFlavour",
+        summary = "Updates a water flavour.",
+        description = "Updates a water flavour.",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = WaterFlavourDto.class))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.PUT,
+        value = WaterApi.PATH_UPDATE_WATER_FLAVOUR,
+        produces = { "application/json" },
+        consumes = { "application/json" }
+    )
+    default ResponseEntity<WaterFlavourDto> updateWaterFlavour(
+        @NotNull @Parameter(name = "id", description = "", required = true, in = ParameterIn.PATH) @PathVariable("id") Long id,
+        @Parameter(name = "WaterFlavourDto", description = "", required = true) @Valid @RequestBody WaterFlavourDto waterFlavourDto
+    ) {
+        return getDelegate().updateWaterFlavour(id, waterFlavourDto);
     }
 
 }

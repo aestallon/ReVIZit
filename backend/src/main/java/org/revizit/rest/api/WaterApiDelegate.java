@@ -57,6 +57,66 @@ public interface WaterApiDelegate {
     }
 
     /**
+     * POST /flavour : Creates a new flavour
+     * Creates a new flavour.
+     *
+     * @param body  (required)
+     * @return Created (status code 201)
+     *         or Flavour already exists (status code 409)
+     * @see WaterApi#createWaterFlavour
+     */
+    default ResponseEntity<WaterFlavourDto> createWaterFlavour(String body) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"name\" : \"Regular\", \"id\" : 1 }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
+     * POST /water/current : Defines the current water state.
+     * Explicitly set the current water state. 
+     *
+     * @param waterStateDto  (required)
+     * @return Created (status code 201)
+     *         or Bad Request (status code 400)
+     * @see WaterApi#defineCurrentWaterState
+     */
+    default ResponseEntity<WaterStateDetail> defineCurrentWaterState(WaterStateDto waterStateDto) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
+     * DELETE /flavour/{id} : Deletes a water flavour.
+     * Deletes a water flavour.
+     *
+     * @param id  (required)
+     * @return Ok (status code 200)
+     *         or Flavour in use (status code 409)
+     * @see WaterApi#deleteWaterFlavour
+     */
+    default ResponseEntity<Void> deleteWaterFlavour(Long id) {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
      * GET /water/current : The current water state.
      * Returns the count of full and empty gallons, as well as the water level in the current gallon. 
      *
@@ -68,7 +128,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"fullGallons\" : 4, \"waterLevel\" : 75 }";
+                    String exampleString = "{ \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -135,7 +195,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "[ { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }, { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" } ]";
+                    String exampleString = "[ { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }, { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" } ]";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -182,6 +242,30 @@ public interface WaterApiDelegate {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
                     String exampleString = "{ \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"waterReport\" : { \"flavourId\" : 1, \"kind\" : \"PERCENTAGE\", \"value\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
+     * PUT /flavour/{id} : Updates a water flavour.
+     * Updates a water flavour.
+     *
+     * @param id  (required)
+     * @param waterFlavourDto  (required)
+     * @return Ok (status code 200)
+     * @see WaterApi#updateWaterFlavour
+     */
+    default ResponseEntity<WaterFlavourDto> updateWaterFlavour(Long id,
+        WaterFlavourDto waterFlavourDto) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"name\" : \"Regular\", \"id\" : 1 }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }

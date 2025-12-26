@@ -1,5 +1,4 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {Step, StepList, StepPanel, StepPanels, Stepper} from 'primeng/stepper';
 import {Card} from 'primeng/card';
 import {
   FormBuilder,
@@ -16,6 +15,7 @@ import {InputNumber} from 'primeng/inputnumber';
 import {Router} from '@angular/router';
 import {RevizitService} from '../service/revizit.service';
 import {WaterReportKind} from '../../api/revizit';
+import {Select} from 'primeng/select';
 
 
 @Component({
@@ -46,7 +46,13 @@ import {WaterReportKind} from '../../api/revizit';
                           [max]="100">
           </p-input-number>
         } @else if (selectedType() === WaterReportKind.SWAP) {
-          <div><b>A new gallon has been inserted into the dispenser.</b></div>
+          <div>
+            Choose a flavour to replace the empty gallon with:
+          </div>
+          <p-select [options]="flavours()"
+                    [(ngModel)]="selectedFlavour"
+                    optionLabel="name"
+                    optionValue="id"></p-select>
         } @else if (selectedType() === WaterReportKind.REFILL) {
           <div><b>All empty gallons have been refilled.</b></div>
         }
@@ -55,7 +61,7 @@ import {WaterReportKind} from '../../api/revizit';
                     severity="primary"
                     class="next-btn"
                     [loading]="submitting()"
-                    [disabled]="!selectedType() || (selectedType()?.length ?? 0) < 1 || waterLevel() < 0 || waterLevel() > 100 || submitting()"
+                    [disabled]="submitDisabled()"
                     [icon]="PrimeIcons.ARROW_CIRCLE_RIGHT"
                     (onClick)="submitReport()">
           </p-button>
@@ -64,18 +70,14 @@ import {WaterReportKind} from '../../api/revizit';
     </p-card>
   `,
   imports: [
-    Stepper,
-    StepList,
-    Step,
-    StepPanels,
-    StepPanel,
     Card,
     ReactiveFormsModule,
     SelectButton,
     Button,
     WaterGallonComponent,
     InputNumber,
-    FormsModule
+    FormsModule,
+    Select
   ],
   styles: `
     :host {
@@ -146,10 +148,21 @@ export class CreateReport {
   submitting = signal(false);
   waterLevel = signal(this.service.waterState().waterLevel);
 
+  flavours = computed(() => [...this.service.waterFlavours().values()]);
+  selectedFlavour = signal<number>(this.service.waterState().flavour.id);
+
+  submitDisabled = computed(() => {
+    const type = this.selectedType();
+    const waterLevel = this.waterLevel();
+    const selectedFlavour = this.selectedFlavour();
+    return !type || !selectedFlavour || (type === WaterReportKind.PERCENTAGE && (waterLevel < 0 || waterLevel > 100) || type === WaterReportKind.SWAP && !this.service.waterFlavours().has(selectedFlavour));
+  });
+
   constructor(private fb: FormBuilder) {
     this.type.valueChanges.subscribe(value => {
       this.selectedType.set(value);
     });
+    this.service.loadWaterFlavours();
   }
 
   protected readonly PrimeIcons = PrimeIcons;
@@ -159,7 +172,7 @@ export class CreateReport {
     this.service.submitWaterReport({
       value: this.waterLevel(),
       kind: this.selectedType()!,
-      flavourId: 1,
+      flavourId: this.selectedFlavour(),
     }).then(() => {
       this.messageService.add({
         severity: 'success',
