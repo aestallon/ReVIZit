@@ -22,6 +22,7 @@ export class RevizitService {
     flavour: {
       id: 0,
       name: '<<Unknown>>',
+      inactive: false,
     }
   })
 
@@ -29,10 +30,14 @@ export class RevizitService {
   readonly pendingReportError = signal<boolean>(false);
   readonly waterFlavours = signal<Map<number, WaterFlavourDto>>(new Map());
 
+  readonly allWaterFlavours = signal<Array<WaterFlavourDto>>([]);
+  readonly usedWaterFlavours = signal<Set<number>>(new Set());
+
   waterApi = inject(WaterService);
 
   async loadWaterState() {
     try {
+      await this.loadWaterFlavours();
       const state = await lastValueFrom(this.waterApi.getCurrentWaterState());
       this.waterState.set(state);
     } catch (e) {
@@ -86,6 +91,45 @@ export class RevizitService {
     } catch (e) {
       console.error('Error on approving reports: ', e);
     }
+  }
+
+  async defineState(dto: WaterStateDto) {
+    try {
+      await lastValueFrom(this.waterApi.defineCurrentWaterState(dto));
+      this.waterState.set(dto);
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async loadAllWaterFlavours() {
+    await Promise.all([
+      lastValueFrom(this.waterApi.getWaterFlavours()).then(fs => this.waterFlavours.set(new Map(fs.map(flavour => [flavour.id, flavour])))),
+      lastValueFrom(this.waterApi.getAllWaterFlavours()).then(fs => this.allWaterFlavours.set(fs)),
+      lastValueFrom(this.waterApi.getInUseWaterFlavours()).then(fs => this.usedWaterFlavours.set(new Set(fs)))
+    ]);
+  }
+
+  async renameFlavour(flavour: WaterFlavourDto) {
+    const _flavour = await lastValueFrom(this.waterApi.updateWaterFlavour(flavour.id, flavour));
+    await this.loadAllWaterFlavours();
+  }
+
+  async createFlavour(name: string) {
+    const flavour = await lastValueFrom(this.waterApi.createWaterFlavour(name));
+    await this.loadAllWaterFlavours();
+    return flavour;
+  }
+
+  async deleteFlavour(flavour: WaterFlavourDto) {
+    await lastValueFrom(this.waterApi.deleteWaterFlavour(flavour.id));
+    await this.loadAllWaterFlavours();
+  }
+
+  async activateFlavour(flavour: WaterFlavourDto) {
+    await lastValueFrom(this.waterApi.activateWaterFlavour(flavour.id));
+    await this.loadAllWaterFlavours();
   }
 
 }

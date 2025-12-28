@@ -40,11 +40,12 @@ public class WaterService {
     return waterStateRepository.findByCreatedAtBetweenOrderByCreatedAtDesc(from, to);
   }
 
-  public WaterState defineState(WaterStateDto dto, long flavourId) {
+  public WaterState defineState(WaterStateDto dto) {
     if (!userService.isCurrentUserAdmin()) {
       throw new IllegalStateException("Only admins can define water state!");
     }
 
+    final var flavourId = dto.getFlavour().getId();
     final var now = LocalDateTime.now();
     var report = WaterReport.builder()
         .reportedAt(now)
@@ -158,7 +159,11 @@ public class WaterService {
   }
 
 
-  public List<WaterFlavour> getFlavours() {
+  public List<WaterFlavour> getAvailableFlavours() {
+    return waterFlavourRepository.findByInactive(false);
+  }
+
+  public List<WaterFlavour> getAllFlavours() {
     return waterFlavourRepository.findAll();
   }
 
@@ -176,21 +181,32 @@ public class WaterService {
   public void deleteFlavour(final Long id) {
     Set<Integer> usedFlavourIds = waterFlavourRepository.findUsedFlavourIds();
     if (usedFlavourIds.contains(id.intValue())) {
-      throw new IllegalArgumentException("Flavour is used!");
+      WaterFlavour waterFlavour = waterFlavourRepository.findById(id.intValue()).orElseThrow();
+      waterFlavour.setInactive(true);
+      waterFlavourRepository.save(waterFlavour);
+    } else {
+      waterFlavourRepository.deleteById(id.intValue());
+    }
+  }
+
+  public WaterFlavour restoreFlavour(final Long id) {
+    final var flavour = waterFlavourRepository.findById(id.intValue()).orElseThrow();
+    if (!flavour.isInactive()) {
+      return flavour;
     }
 
-    waterFlavourRepository.deleteById(id.intValue());
+    flavour.setInactive(false);
+    return waterFlavourRepository.save(flavour);
   }
 
-  public void renameFlavour(final Long id, final String newName) {
+  public WaterFlavour renameFlavour(final Long id, final String newName) {
     final var flavour = waterFlavourRepository.findById(id.intValue()).orElseThrow();
     flavour.setName(newName);
-    waterFlavourRepository.save(flavour);
+    return waterFlavourRepository.save(flavour);
   }
 
-  public Set<WaterFlavour> getFlavoursInUse() {
-    return new HashSet<>(
-        waterFlavourRepository.findAllById(waterFlavourRepository.findUsedFlavourIds()));
+  public Set<Integer> getFlavoursInUse() {
+    return waterFlavourRepository.findUsedFlavourIds();
   }
 
 }

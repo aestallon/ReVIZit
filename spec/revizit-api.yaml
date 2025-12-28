@@ -324,6 +324,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/WaterFlavourDto'
 
+  /flavour/admin/all:
+    get:
+      summary: Returns all - including inactive - water flavours.
+      description: Returns all - including inactive - water flavours.
+      operationId: getAllWaterFlavours
+      tags:
+        - Water
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaterFlavourDto'
+  /flavour/admin/in-use:
+    get:
+      summary: Returns the IDs of the water flavours currently in use.
+      description: Returns the IDs of the water flavours currently in use.
+      operationId: getInUseWaterFlavours
+      tags:
+        - Water
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+  /flavour/admin/activate/{id}:
+    put:
+      summary: Activates an archived water flavour.
+      description: Activates an archived water flavour.
+      operationId: activateWaterFlavour
+      tags:
+        - Water
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaterFlavourDto'
+
 
 components:
   schemas:

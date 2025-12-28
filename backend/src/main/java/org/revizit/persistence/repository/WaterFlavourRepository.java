@@ -1,5 +1,6 @@
 package org.revizit.persistence.repository;
 
+import java.util.List;
 import java.util.Set;
 import org.revizit.persistence.entity.WaterFlavour;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,11 +14,9 @@ public interface WaterFlavourRepository extends JpaRepository<WaterFlavour, Inte
 
   void deleteByName(String name);
 
-  @NativeQuery("""
-      select distinct f.id
-      from            water_report r
-      left join       water_flavour f on r.flavour = f.id
-      where           r.rejected_by is null""")
+  @NativeQuery("select distinct r.flavour from water_report r")
   Set<Integer> findUsedFlavourIds();
+
+  List<WaterFlavour> findByInactive(boolean inactive);
 
 }

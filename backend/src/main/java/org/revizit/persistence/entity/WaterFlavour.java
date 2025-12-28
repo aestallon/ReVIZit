@@ -23,7 +23,8 @@ public class WaterFlavour {
   public WaterFlavourDto toDto() {
     return new WaterFlavourDto()
         .id(id.longValue())
-        .name(name);
+        .name(name)
+        .inactive(inactive);
   }
 
 }

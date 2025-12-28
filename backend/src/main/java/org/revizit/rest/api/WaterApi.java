@@ -46,6 +46,37 @@ public interface WaterApi {
         return new WaterApiDelegate() {};
     }
 
+    String PATH_ACTIVATE_WATER_FLAVOUR = "/flavour/admin/activate/{id}";
+    /**
+     * PUT /flavour/admin/activate/{id} : Activates an archived water flavour.
+     * Activates an archived water flavour.
+     *
+     * @param id  (required)
+     * @return Accepted (status code 202)
+     */
+    @Operation(
+        operationId = "activateWaterFlavour",
+        summary = "Activates an archived water flavour.",
+        description = "Activates an archived water flavour.",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "202", description = "Accepted", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = WaterFlavourDto.class))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.PUT,
+        value = WaterApi.PATH_ACTIVATE_WATER_FLAVOUR,
+        produces = { "application/json" }
+    )
+    default ResponseEntity<WaterFlavourDto> activateWaterFlavour(
+        @NotNull @Parameter(name = "id", description = "", required = true, in = ParameterIn.PATH) @PathVariable("id") Long id
+    ) {
+        return getDelegate().activateWaterFlavour(id);
+    }
+
+
     String PATH_APPROVE_WATER_REPORT = "/report/approve";
     /**
      * PUT /report/approve : Approves one or more water reports.
@@ -178,6 +209,36 @@ public interface WaterApi {
     }
 
 
+    String PATH_GET_ALL_WATER_FLAVOURS = "/flavour/admin/all";
+    /**
+     * GET /flavour/admin/all : Returns all - including inactive - water flavours.
+     * Returns all - including inactive - water flavours.
+     *
+     * @return Ok (status code 200)
+     */
+    @Operation(
+        operationId = "getAllWaterFlavours",
+        summary = "Returns all - including inactive - water flavours.",
+        description = "Returns all - including inactive - water flavours.",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok", content = {
+                @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WaterFlavourDto.class)))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.GET,
+        value = WaterApi.PATH_GET_ALL_WATER_FLAVOURS,
+        produces = { "application/json" }
+    )
+    default ResponseEntity<List<WaterFlavourDto>> getAllWaterFlavours(
+        
+    ) {
+        return getDelegate().getAllWaterFlavours();
+    }
+
+
     String PATH_GET_CURRENT_WATER_STATE = "/water/current";
     /**
      * GET /water/current : The current water state.
@@ -207,6 +268,36 @@ public interface WaterApi {
         
     ) {
         return getDelegate().getCurrentWaterState();
+    }
+
+
+    String PATH_GET_IN_USE_WATER_FLAVOURS = "/flavour/admin/in-use";
+    /**
+     * GET /flavour/admin/in-use : Returns the IDs of the water flavours currently in use.
+     * Returns the IDs of the water flavours currently in use.
+     *
+     * @return Ok (status code 200)
+     */
+    @Operation(
+        operationId = "getInUseWaterFlavours",
+        summary = "Returns the IDs of the water flavours currently in use.",
+        description = "Returns the IDs of the water flavours currently in use.",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok", content = {
+                @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Long.class)))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.GET,
+        value = WaterApi.PATH_GET_IN_USE_WATER_FLAVOURS,
+        produces = { "application/json" }
+    )
+    default ResponseEntity<List<Long>> getInUseWaterFlavours(
+        
+    ) {
+        return getDelegate().getInUseWaterFlavours();
     }
 
 

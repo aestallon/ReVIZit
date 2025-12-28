@@ -34,6 +34,28 @@ public interface WaterApiDelegate {
     }
 
     /**
+     * PUT /flavour/admin/activate/{id} : Activates an archived water flavour.
+     * Activates an archived water flavour.
+     *
+     * @param id  (required)
+     * @return Accepted (status code 202)
+     * @see WaterApi#activateWaterFlavour
+     */
+    default ResponseEntity<WaterFlavourDto> activateWaterFlavour(Long id) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
      * PUT /report/approve : Approves one or more water reports.
      * Approves one or more water reports. The water reports must be pending approval, form a consecutive list (in chronological order), and must start with the oldest pending report. 
      *
@@ -117,6 +139,27 @@ public interface WaterApiDelegate {
     }
 
     /**
+     * GET /flavour/admin/all : Returns all - including inactive - water flavours.
+     * Returns all - including inactive - water flavours.
+     *
+     * @return Ok (status code 200)
+     * @see WaterApi#getAllWaterFlavours
+     */
+    default ResponseEntity<List<WaterFlavourDto>> getAllWaterFlavours() {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "[ { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 } ]";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
      * GET /water/current : The current water state.
      * Returns the count of full and empty gallons, as well as the water level in the current gallon. 
      *
@@ -129,6 +172,27 @@ public interface WaterApiDelegate {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
                     String exampleString = "{ \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
+     * GET /flavour/admin/in-use : Returns the IDs of the water flavours currently in use.
+     * Returns the IDs of the water flavours currently in use.
+     *
+     * @return Ok (status code 200)
+     * @see WaterApi#getInUseWaterFlavours
+     */
+    default ResponseEntity<List<Long>> getInUseWaterFlavours() {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "[ 0, 0 ]";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
