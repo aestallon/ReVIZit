@@ -17,6 +17,9 @@ public class WaterFlavour {
   @Column(nullable = false, unique = true)
   private String name;
 
+  @Column(nullable = false)
+  private boolean inactive = false;
+
   public WaterFlavourDto toDto() {
     return new WaterFlavourDto()
         .id(id.longValue())

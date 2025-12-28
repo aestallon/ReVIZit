@@ -69,7 +69,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"name\" : \"Regular\", \"id\" : 1 }";
+                    String exampleString = "{ \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -92,7 +92,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }";
+                    String exampleString = "{ \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -128,7 +128,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }";
+                    String exampleString = "{ \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -170,7 +170,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "[ { \"name\" : \"Regular\", \"id\" : 1 }, { \"name\" : \"Regular\", \"id\" : 1 } ]";
+                    String exampleString = "[ { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 } ]";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -195,7 +195,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "[ { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }, { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" } ]";
+                    String exampleString = "[ { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }, { \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" } ]";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -265,7 +265,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"name\" : \"Regular\", \"id\" : 1 }";
+                    String exampleString = "{ \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }

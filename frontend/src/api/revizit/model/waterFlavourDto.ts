@@ -12,5 +12,6 @@
 export interface WaterFlavourDto { 
     id: number;
     name: string;
+    inactive: boolean;
 }
 

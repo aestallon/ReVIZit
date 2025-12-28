@@ -37,10 +37,6 @@ public class WaterState {
   @Column(name = "curr_pct", nullable = false)
   private int currPct;
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "curr_flav")
-  private WaterFlavour currFlav;
-
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
@@ -75,7 +71,6 @@ public class WaterState {
     final var state = switch (report.getKind()) {
       case SET_PERCENTAGE -> {
         final var newState = new WaterState();
-        newState.setCurrFlav(currFlav);
         newState.setEmptyCnt(emptyCnt);
         newState.setFullCnt(fullCnt);
         newState.setCurrPct(report.getVal());
@@ -83,8 +78,6 @@ public class WaterState {
       }
       case BALLOON_CHANGE -> {
         final var newState = new WaterState();
-        // FIXME: This has to be in the report!
-        newState.setCurrFlav(currFlav);
         newState.setEmptyCnt(emptyCnt + 1);
         newState.setFullCnt(fullCnt - 1);
         newState.setCurrPct(100);
@@ -92,7 +85,6 @@ public class WaterState {
       }
       case BALLOON_REFILL -> {
         final var newState = new WaterState();
-        newState.setCurrFlav(currFlav);
         newState.setEmptyCnt(0);
         newState.setFullCnt(fullCnt + emptyCnt);
         newState.setCurrPct(currPct);

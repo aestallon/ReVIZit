@@ -25,6 +25,8 @@ public class WaterFlavourDto {
 
   private String name;
 
+  private Boolean inactive = false;
+
   public WaterFlavourDto() {
     super();
   }
@@ -32,9 +34,10 @@ public class WaterFlavourDto {
   /**
    * Constructor with only required parameters
    */
-  public WaterFlavourDto(Long id, String name) {
+  public WaterFlavourDto(Long id, String name, Boolean inactive) {
     this.id = id;
     this.name = name;
+    this.inactive = inactive;
   }
 
   public WaterFlavourDto id(Long id) {
@@ -77,6 +80,26 @@ public class WaterFlavourDto {
     this.name = name;
   }
 
+  public WaterFlavourDto inactive(Boolean inactive) {
+    this.inactive = inactive;
+    return this;
+  }
+
+  /**
+   * Get inactive
+   * @return inactive
+   */
+  @NotNull 
+  @Schema(name = "inactive", example = "false", requiredMode = Schema.RequiredMode.REQUIRED)
+  @JsonProperty("inactive")
+  public Boolean getInactive() {
+    return inactive;
+  }
+
+  public void setInactive(Boolean inactive) {
+    this.inactive = inactive;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -87,12 +110,13 @@ public class WaterFlavourDto {
     }
     WaterFlavourDto waterFlavourDto = (WaterFlavourDto) o;
     return Objects.equals(this.id, waterFlavourDto.id) &&
-        Objects.equals(this.name, waterFlavourDto.name);
+        Objects.equals(this.name, waterFlavourDto.name) &&
+        Objects.equals(this.inactive, waterFlavourDto.inactive);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name);
+    return Objects.hash(id, name, inactive);
   }
 
   @Override
@@ -101,6 +125,7 @@ public class WaterFlavourDto {
     sb.append("class WaterFlavourDto {\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    inactive: ").append(toIndentedString(inactive)).append("\n");
     sb.append("}");
     return sb.toString();
   }

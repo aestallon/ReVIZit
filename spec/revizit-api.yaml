@@ -455,4 +455,8 @@ components:
         name:
           type: string
           example: "Regular"
-      required: [ id, name ]
+        inactive:
+          type: boolean
+          default: false
+          example: false
+      required: [ id, name, inactive ]

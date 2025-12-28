@@ -24,8 +24,9 @@ create type report_type as enum (
 --changeset bazil:3
 create table water_flavour
 (
-    id   serial primary key,
-    name text not null unique
+    id       serial primary key,
+    name     text    not null unique,
+    inactive boolean not null default false
 );
 
 --changeset bazil:4
@@ -35,7 +36,7 @@ create table water_report
     kind        report_type                 not null,
     val         int                         not null,
     reported_at timestamp without time zone not null default now(),
-    reported_by int                         references user_account,
+    reported_by int references user_account,
     approved_at timestamp without time zone,
     approved_by int references user_account
 );
@@ -47,7 +48,6 @@ create table water_state
     empty_cnt  int                         not null default 0,
     full_cnt   int                         not null default 0,
     curr_pct   int                         not null,
-    curr_flav  int references water_flavour,
     created_at timestamp without time zone not null default now(),
     report     int references water_report
 );
