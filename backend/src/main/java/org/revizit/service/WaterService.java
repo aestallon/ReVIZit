@@ -172,13 +172,28 @@ public class WaterService {
     return waterFlavourRepository.findById(id.intValue());
   }
 
+  @Transactional
   public WaterFlavour createFlavour(final String name) {
+    if (!userService.isCurrentUserAdmin()) {
+      throw new NotAuthorisedException();
+    }
+
+    if (getAllFlavours().stream().map(WaterFlavour::getName).collect(Collectors.toSet())
+        .contains(name)) {
+      throw new IllegalArgumentException("Water flavour with name " + name + " already exists!");
+    }
+
     final var flavour = new WaterFlavour();
     flavour.setName(name);
     return waterFlavourRepository.save(flavour);
   }
 
+  @Transactional
   public void deleteFlavour(final Long id) {
+    if (!userService.isCurrentUserAdmin()) {
+      throw new NotAuthorisedException();
+    }
+
     Set<Integer> usedFlavourIds = waterFlavourRepository.findUsedFlavourIds();
     if (usedFlavourIds.contains(id.intValue())) {
       WaterFlavour waterFlavour = waterFlavourRepository.findById(id.intValue()).orElseThrow();
@@ -189,8 +204,14 @@ public class WaterService {
     }
   }
 
+  @Transactional
   public WaterFlavour restoreFlavour(final Long id) {
-    final var flavour = waterFlavourRepository.findById(id.intValue()).orElseThrow();
+    if (!userService.isCurrentUserAdmin()) {
+      throw new NotAuthorisedException();
+    }
+
+    final var flavour = waterFlavourRepository.findById(id.intValue())
+        .orElseThrow(() -> new NotFoundException("Flavour not found!"));
     if (!flavour.isInactive()) {
       return flavour;
     }
@@ -199,8 +220,26 @@ public class WaterService {
     return waterFlavourRepository.save(flavour);
   }
 
+  @Transactional
   public WaterFlavour renameFlavour(final Long id, final String newName) {
-    final var flavour = waterFlavourRepository.findById(id.intValue()).orElseThrow();
+    if (!userService.isCurrentUserAdmin()) {
+      throw new NotAuthorisedException();
+    }
+
+    final var flavour = waterFlavourRepository
+        .findById(id.intValue())
+        .orElseThrow(() -> new NotFoundException("Flavour not found!"));
+    if (newName.equals(flavour.getName())) {
+      return flavour;
+    }
+
+    if (getAllFlavours().stream()
+        .map(WaterFlavour::getName)
+        .collect(Collectors.toSet())
+        .contains(newName)) {
+      throw new IllegalArgumentException("Water flavour with name " + newName + " already exists!");
+    }
+
     flavour.setName(newName);
     return waterFlavourRepository.save(flavour);
   }

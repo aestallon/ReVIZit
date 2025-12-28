@@ -36,22 +36,13 @@ export class RevizitService {
   waterApi = inject(WaterService);
 
   async loadWaterState() {
-    try {
-      await this.loadWaterFlavours();
-      const state = await lastValueFrom(this.waterApi.getCurrentWaterState());
-      this.waterState.set(state);
-    } catch (e) {
-      console.error('Error on fetching water state: ', e);
-    }
+    await this.loadWaterFlavours();
+    const state = await lastValueFrom(this.waterApi.getCurrentWaterState());
+    this.waterState.set(state);
   }
 
   async submitWaterReport(report: WaterReportDto) {
-    try {
-      const res = await lastValueFrom(this.waterApi.submitWaterReport(report));
-      return Promise.resolve(res);
-    } catch (e) {
-      return Promise.reject(e);
-    }
+    return await lastValueFrom(this.waterApi.submitWaterReport(report));
   }
 
   async loadPendingReports() {
@@ -85,12 +76,7 @@ export class RevizitService {
   }
 
   async acceptReports(reports: Array<WaterReportDetail>) {
-    try {
-      await lastValueFrom(this.waterApi.approveWaterReport(reports.map(report => report.id)));
-      await this.loadPendingReports();
-    } catch (e) {
-      console.error('Error on approving reports: ', e);
-    }
+    await lastValueFrom(this.waterApi.approveWaterReport(reports.map(report => report.id)));
   }
 
   async defineState(dto: WaterStateDto) {

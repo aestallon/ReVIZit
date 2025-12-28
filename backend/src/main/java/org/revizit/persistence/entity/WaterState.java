@@ -24,16 +24,16 @@ public class WaterState {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @Min(0)
+  @Min(value = 0,message = "{water-state.empty-count.min}")
   @Column(name = "empty_cnt", nullable = false)
   private int emptyCnt;
 
-  @Min(0)
+  @Min(value = 0, message = "{water-state.full-count.min}")
   @Column(name = "full_cnt", nullable = false)
   private int fullCnt;
 
-  @Min(0)
-  @Max(100)
+  @Min(value = 0, message = "{water-state.curr-percentage.min}")
+  @Max(value = 100, message = "{water-state.curr-percentage.max}")
   @Column(name = "curr_pct", nullable = false)
   private int currPct;
 

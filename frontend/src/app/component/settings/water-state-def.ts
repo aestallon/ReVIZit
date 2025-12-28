@@ -8,6 +8,7 @@ import {WaterGallonComponent} from '../gallon';
 import {MessageService, PrimeIcons} from 'primeng/api';
 import {FormsModule} from '@angular/forms';
 import {Select} from 'primeng/select';
+import {asCustomErrorMsg} from '../../service/errors';
 
 
 @Component({
@@ -144,9 +145,10 @@ export class WaterStateDef {
         this.flavour.set(this.service.waterState().flavour.id);
         this.loading.set(false);
       })
-      .catch(() => {
+      .catch((err) => {
         this.loading.set(false);
-        this.unavailable.set(true)
+        this.unavailable.set(true);
+        this.messageService.add(asCustomErrorMsg(err, 'Failed to load water state data'));
       });
   }
 
@@ -174,12 +176,7 @@ export class WaterStateDef {
         this.loading.set(false);
       })
       .catch(err => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.message,
-          life: 3000
-        });
+        this.messageService.add(asCustomErrorMsg(err, 'Failed to save water state'));
         this.loading.set(false);
       });
   }

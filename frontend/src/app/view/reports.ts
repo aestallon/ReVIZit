@@ -5,8 +5,9 @@ import {TableModule} from 'primeng/table';
 import {WaterReportDetail, WaterReportDto, WaterReportKind} from '../../api/revizit';
 import {DatePipe, NgClass} from '@angular/common';
 import {Button} from 'primeng/button';
-import {PrimeIcons} from 'primeng/api';
+import {MessageService, PrimeIcons} from 'primeng/api';
 import {Card} from 'primeng/card';
+import {asErrorMsg} from '../service/errors';
 
 @Component({
   selector: 'app-reports',
@@ -134,6 +135,7 @@ export class Reports {
 
   userService = inject(UserService);
   service = inject(RevizitService);
+  messageService = inject(MessageService);
 
   readonly pendingReports = computed(() => this.service.pendingReports());
 
@@ -227,7 +229,26 @@ export class Reports {
       return;
     }
 
-    this.service.acceptReports(reportsToSubmit).then(() => this.loading.set(false));
+    this.service.acceptReports(reportsToSubmit)
+      .then(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Successfully accepted reports',
+          detail: 'Thanks for your contribution!',
+          life: 3000,
+        })
+      })
+      .catch(err => {
+        this.messageService.add(asErrorMsg(err));
+      })
+      .then(() => this.service.loadPendingReports())
+      .then(() => {
+        this.loading.set(false);
+      })
+      .catch(err => {
+        this.loading.set(false);
+        this.messageService.add(asErrorMsg(err));
+      });
   }
 
   protected readonly PrimeIcons = PrimeIcons;

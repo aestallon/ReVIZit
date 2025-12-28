@@ -1,10 +1,8 @@
 import {Component, inject} from '@angular/core';
 import {Card} from 'primeng/card';
 import {Panel} from 'primeng/panel';
-import {UserService} from '../service/user.service';
 import {RevizitService} from '../service/revizit.service';
 import {FormsModule} from '@angular/forms';
-import {PrimeIcons} from 'primeng/api';
 import {WaterStateDef} from '../component/settings/water-state-def';
 import {WaterFlavourDef} from '../component/settings/water-flavour-def';
 
@@ -13,7 +11,7 @@ import {WaterFlavourDef} from '../component/settings/water-flavour-def';
   template: `
     <p-card header="Settings" class="settings-card">
       <div class="settings-content">
-        <p-panel header="Define the Current State" >
+        <p-panel header="Define the Current State">
           <app-water-state-def></app-water-state-def>
         </p-panel>
         <p-panel header="Flavours">
@@ -40,12 +38,5 @@ import {WaterFlavourDef} from '../component/settings/water-flavour-def';
   `
 })
 export class Settings {
-
-  userService = inject(UserService);
-  service = inject(RevizitService);
-
-
-  protected readonly PrimeIcons = PrimeIcons;
-
 
 }
