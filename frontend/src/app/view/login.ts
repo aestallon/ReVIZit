@@ -139,7 +139,7 @@ export class Login {
     try {
       const success = await this.service.logIn(this.username, this.password);
       if (success) {
-        await this.router.navigateByUrl(this.navigation.wantsToMakeAReport ? '/create-report' : '/');
+        await this.router.navigateByUrl('/');
       } else {
         this.error.set('Invalid username or password');
       }

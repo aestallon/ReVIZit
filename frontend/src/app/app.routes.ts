@@ -9,7 +9,6 @@ export const routes: Routes = [
   {
     path: 'create-report',
     loadComponent: () => import('./view/create.report').then(m => m.CreateReport),
-    canActivate: [AUTH_GUARD]
   },
   {
     path: 'settings',

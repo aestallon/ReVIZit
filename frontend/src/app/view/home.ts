@@ -200,9 +200,11 @@ import {RevizitService} from '../service/revizit.service';
       .home-container {
         flex-direction: column;
       }
+
       .home-description h1 {
         font-size: 1.5rem;
       }
+
       .home-description h2 {
         font-size: 1rem;
       }
@@ -266,11 +268,6 @@ export class Home implements OnInit {
   protected readonly PrimeIcons = PrimeIcons;
 
   onReportClicked() {
-    if (this.userService.profile()) {
-      this.router.navigateByUrl('/create-report');
-    } else {
-      this.navigationService.wantsToMakeAReport = true;
-      this.router.navigateByUrl('/login');
-    }
+    this.router.navigateByUrl('/create-report');
   }
 }
