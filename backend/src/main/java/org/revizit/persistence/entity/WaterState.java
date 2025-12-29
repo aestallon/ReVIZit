@@ -74,6 +74,7 @@ public class WaterState {
         newState.setEmptyCnt(emptyCnt);
         newState.setFullCnt(fullCnt);
         newState.setCurrPct(report.getVal());
+        report.setFlavour(this.report.getFlavour());
         yield newState;
       }
       case BALLOON_CHANGE -> {
@@ -88,6 +89,7 @@ public class WaterState {
         newState.setEmptyCnt(0);
         newState.setFullCnt(fullCnt + emptyCnt);
         newState.setCurrPct(currPct);
+        report.setFlavour(this.report.getFlavour());
         yield newState;
       }
     };
