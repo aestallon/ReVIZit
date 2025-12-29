@@ -40,7 +40,7 @@ public class WaterReport {
   private LocalDateTime reportedAt;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "reported_by", nullable = false)
+  @JoinColumn(name = "reported_by")
   private UserAccount reportedBy;
 
   @Column(name = "approved_at")
