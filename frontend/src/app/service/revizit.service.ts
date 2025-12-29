@@ -7,24 +7,28 @@ import {
   WaterStateDto
 } from '../../api/revizit';
 import {lastValueFrom, tap} from 'rxjs';
+import {MessageService} from 'primeng/api';
+import {asCustomErrorMsg} from './errors';
 
+const STATE_UNKNOWN: WaterStateDto = {
+  emptyGallons: 0,
+  waterLevel: 0,
+  fullGallons: 0,
+  reportedAt: '',
+  flavour: {
+    id: 0,
+    name: '<<Unknown>>',
+    inactive: false,
+  }
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class RevizitService {
 
-  readonly waterState = signal<WaterStateDto>({
-    emptyGallons: 0,
-    waterLevel: 0,
-    fullGallons: 0,
-    reportedAt: '',
-    flavour: {
-      id: 0,
-      name: '<<Unknown>>',
-      inactive: false,
-    }
-  })
+
+  readonly waterState = signal<WaterStateDto>(STATE_UNKNOWN);
 
   readonly pendingReports = signal<Array<WaterReportDetail>>([]);
   readonly pendingReportError = signal<boolean>(false);
@@ -34,11 +38,23 @@ export class RevizitService {
   readonly usedWaterFlavours = signal<Set<number>>(new Set());
 
   waterApi = inject(WaterService);
+  messageService = inject(MessageService);
 
   async loadWaterState() {
     await this.loadWaterFlavours();
-    const state = await lastValueFrom(this.waterApi.getCurrentWaterState());
-    this.waterState.set(state);
+
+
+    try {
+      const state = await lastValueFrom(this.waterApi.getCurrentWaterState());
+      this.waterState.set(state);
+    } catch (err) {
+      if (404 === (err as any)?.status) {
+        this.messageService.add(asCustomErrorMsg(err, 'No water state available!'));
+        this.waterState.set(STATE_UNKNOWN);
+      } else {
+        throw err;
+      }
+    }
   }
 
   async submitWaterReport(report: WaterReportDto) {
