@@ -24,7 +24,7 @@ public class WaterState {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @Min(value = 0,message = "{water-state.empty-count.min}")
+  @Min(value = 0, message = "{water-state.empty-count.min}")
   @Column(name = "empty_cnt", nullable = false)
   private int emptyCnt;
 
@@ -67,35 +67,55 @@ public class WaterState {
         .reportedBy(reporter);
   }
 
-  public WaterState accept(WaterReport report) {
-    final var state = switch (report.getKind()) {
+  public ReportResult accept(WaterReport report) {
+    final var result = switch (report.getKind()) {
       case SET_PERCENTAGE -> {
         final var newState = new WaterState();
         newState.setEmptyCnt(emptyCnt);
         newState.setFullCnt(fullCnt);
         newState.setCurrPct(report.getVal());
         report.setFlavour(this.report.getFlavour());
-        yield newState;
+        yield new ReportResult.New(newState);
       }
       case BALLOON_CHANGE -> {
         final var newState = new WaterState();
         newState.setEmptyCnt(emptyCnt + 1);
         newState.setFullCnt(fullCnt - 1);
         newState.setCurrPct(100);
-        yield newState;
+        yield new ReportResult.New(newState);
       }
       case BALLOON_REFILL -> {
+        if (emptyCnt == 0) {
+          yield ReportResult.Rejection.INSTANCE;
+        }
+
         final var newState = new WaterState();
         newState.setEmptyCnt(0);
         newState.setFullCnt(fullCnt + emptyCnt);
         newState.setCurrPct(currPct);
         report.setFlavour(this.report.getFlavour());
-        yield newState;
+        yield new ReportResult.New(newState);
       }
     };
-    state.setReport(report);
-    state.setCreatedAt(report.getReportedAt());
-    return state;
+
+    if (result instanceof ReportResult.New(var state)) {
+      state.setReport(report);
+      state.setCreatedAt(report.getReportedAt());
+    }
+
+    return result;
+  }
+
+  public sealed interface ReportResult {
+
+    record Rejection() implements ReportResult {
+      public static final ReportResult INSTANCE = new Rejection();
+    }
+
+
+    record New(WaterState state) implements ReportResult {
+    }
+
   }
 
 }

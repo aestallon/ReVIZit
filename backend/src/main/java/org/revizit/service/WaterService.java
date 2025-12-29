@@ -2,7 +2,6 @@ package org.revizit.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,7 +16,6 @@ import org.revizit.persistence.repository.WaterReportRepository;
 import org.revizit.persistence.repository.WaterStateRepository;
 import org.revizit.rest.model.WaterReportDto;
 import org.revizit.rest.model.WaterStateDto;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -108,7 +106,7 @@ public class WaterService {
 
     final var pendingReports = getPendingReports();
     if (ids.size() > pendingReports.size()) {
-      throw new IllegalArgumentException("Too many ids!");
+      throw new IllegalArgumentException("One or more reports are not pending!");
     }
 
     List<WaterReport> reportsToAccept = new ArrayList<>(ids.size());
@@ -125,10 +123,20 @@ public class WaterService {
     var state = currentState();
     final var now = LocalDateTime.now();
     for (final var report : reportsToAccept) {
-      report.setApprovedAt(now);
-      report.setApprovedBy(user);
-      state = currentState().accept(report);
-      waterStateRepository.save(state);
+
+      state = switch (state.accept(report)) {
+        case WaterState.ReportResult.New(var newState) -> {
+          report.setApprovedAt(now);
+          report.setApprovedBy(user);
+          yield waterStateRepository.save(newState);
+        }
+        case WaterState.ReportResult.Rejection _ -> {
+          report.setRejectedAt(now);
+          report.setRejectedBy(user);
+          waterReportRepository.save(report);
+          yield state;
+        }
+      };
     }
     return state;
   }

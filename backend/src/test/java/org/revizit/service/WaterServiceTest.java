@@ -1,6 +1,7 @@
 package org.revizit.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
-@Transactional
 class WaterServiceTest {
 
   @Autowired
@@ -205,7 +205,117 @@ class WaterServiceTest {
     assertThat(newState.getCurrPct()).isEqualTo(50);
     WaterReport updatedReport = waterReportRepository.findById(report.getId()).orElseThrow();
     assertThat(updatedReport.getApprovedAt()).isNotNull();
-    assertThat(updatedReport.getApprovedBy()).isEqualTo(adminUser);
+    assertThat(updatedReport.getApprovedBy().getId()).isEqualTo(adminUser.getId());
+  }
+
+  @Test
+  void acceptReports_multipleReportsAreAccepted_Success() {
+    WaterFlavour flavour = waterService.createFlavour("Apple");
+    WaterFlavour flavour2 = waterService.createFlavour("Orange");
+    waterService.defineState(new WaterStateDto()
+        .flavour(new WaterFlavourDto().id(flavour.getId().longValue()).name("Apple"))
+        .waterLevel(100)
+        .emptyGallons(0)
+        .fullGallons(10));
+
+    final List<WaterReport> reports = new ArrayList<>();
+    final List<WaterReportDto> reportDtos = List.of(
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(70),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(50),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(20),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(10),
+        new WaterReportDto().kind(WaterReportKind.SWAP).flavourId(flavour2.getId().longValue()),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(80));
+    for (WaterReportDto dto : reportDtos) {
+      reports.add(waterService.registerReport(dto));
+    }
+
+    final List<Long> reportIds = reports.stream()
+        .map(it -> it.getId().longValue())
+        .toList();
+    WaterState waterState = waterService.acceptReports(reportIds);
+    assertThat(waterState)
+        .returns(80, WaterState::getCurrPct)
+        .returns(1, WaterState::getEmptyCnt)
+        .returns(9, WaterState::getFullCnt)
+        .returns("Orange", it -> it.getReport().getFlavour().getName());
+    // SIZE+1 including the defineState
+    assertThat(waterReportRepository.findAll()).hasSize(reportDtos.size() + 1);
+    assertThat(waterReportRepository.findAll()).allSatisfy(
+        it -> assertThat(it.getApprovedAt()).isNotNull());
+  }
+
+  @Test
+  void acceptReports_constraintViolatingReport_throwsException_andPreservesState() {
+    WaterFlavour flavour = waterService.createFlavour("Apple");
+    WaterFlavour flavour2 = waterService.createFlavour("Orange");
+
+    // there is only one full gallon...
+    waterService.defineState(new WaterStateDto()
+        .flavour(new WaterFlavourDto().id(flavour.getId().longValue()).name("Apple"))
+        .waterLevel(100)
+        .emptyGallons(0)
+        .fullGallons(1));
+
+    final List<WaterReport> reports = new ArrayList<>();
+    final List<WaterReportDto> reportDtos = List.of(
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(70),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(50),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(20),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(10),
+        new WaterReportDto().kind(WaterReportKind.SWAP).flavourId(flavour2.getId().longValue()),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(80),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(60),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(40),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(20),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(0),
+        // ...but we are trying to submit a second swap, which is impossible:
+        new WaterReportDto().kind(WaterReportKind.SWAP).flavourId(flavour2.getId().longValue()),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(90));
+    for (WaterReportDto dto : reportDtos) {
+      reports.add(waterService.registerReport(dto));
+    }
+
+    final List<Long> reportIds = reports.stream()
+        .map(it -> it.getId().longValue())
+        .toList();
+    assertThatThrownBy(() -> waterService.acceptReports(reportIds))
+        .isInstanceOf(ConstraintViolationException.class)
+        .hasMessageContaining("The number of full gallons cannot be lower than 0");
+
+    assertThat(waterService.currentState())
+        .returns(100, WaterState::getCurrPct)
+        .returns(1, WaterState::getFullCnt)
+        .returns(0, WaterState::getEmptyCnt)
+        .returns("Apple", it -> it.getReport().getFlavour().getName());
+    assertThat(waterStateRepository.findAll()).hasSize(1);
+  }
+
+  @Test
+  void acceptReports_ReportingRefillWhenNoGallonsAreEmpty_isRejected_andStateIsPreserved() {
+    WaterFlavour flavour = waterService.createFlavour("Apple");
+    waterService.defineState(new WaterStateDto()
+        .flavour(new WaterFlavourDto().id(flavour.getId().longValue()).name("Apple"))
+        .waterLevel(100)
+        .emptyGallons(0)
+        .fullGallons(10));
+    WaterReport report =
+        waterService.registerReport(new WaterReportDto().kind(WaterReportKind.REFILL));
+    final var waterState = waterService.acceptReports(List.of(report.getId().longValue()));
+    assertThat(waterState)
+        .returns(waterService.currentState().getId(), WaterState::getId)
+        .returns(100, WaterState::getCurrPct)
+        .returns(10, WaterState::getFullCnt)
+        .returns(0, WaterState::getEmptyCnt);
+    // no extraneous state was persisted:
+    assertThat(waterStateRepository.findAll()).hasSize(1);
+
+    report = waterReportRepository.findById(report.getId()).orElseThrow();
+    assertThat(report)
+        .satisfies(it -> assertThat(it.getApprovedAt()).isNull())
+        .satisfies(it -> assertThat(it.getApprovedBy()).isNull())
+        .satisfies(it -> assertThat(it.getRejectedAt()).isNotNull())
+        .satisfies(it -> assertThat(it.getRejectedBy().getId()).isEqualTo(adminUser.getId()));
   }
 
   @Test
@@ -225,8 +335,9 @@ class WaterServiceTest {
 
     WaterReport updatedReport = waterReportRepository.findById(report.getId()).orElseThrow();
     assertThat(updatedReport.getRejectedAt()).isNotNull();
-    assertThat(updatedReport.getRejectedBy()).isEqualTo(adminUser);
+    assertThat(updatedReport.getRejectedBy().getId()).isEqualTo(adminUser.getId());
     assertThat(waterService.currentState().getCurrPct()).isEqualTo(100);
+    assertThat(waterService.getPendingReports()).isEmpty();
   }
 
   @Test
@@ -241,8 +352,9 @@ class WaterServiceTest {
     WaterState state1 = waterService.currentState();
 
     // Simulate some time passed and new state
-    WaterReport report = waterService.registerReport(
-        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(90));
+    WaterReport report = waterService.registerReport(new WaterReportDto()
+        .kind(WaterReportKind.PERCENTAGE)
+        .value(90));
     waterService.acceptReports(List.of(report.getId().longValue()));
 
     WaterState state2 = waterService.currentState();
@@ -268,7 +380,8 @@ class WaterServiceTest {
   @Test
   void defineState_NotAdmin_ThrowsException() {
     Mockito.when(userService.isCurrentUserAdmin()).thenReturn(false);
-    assertThatThrownBy(() -> waterService.defineState(new WaterStateDto()))
+    final var dto = new WaterStateDto();
+    assertThatThrownBy(() -> waterService.defineState(dto))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Only admins");
   }
@@ -309,14 +422,50 @@ class WaterServiceTest {
 
   @Test
   void acceptReports_InvalidId_ThrowsException() {
-    assertThatThrownBy(() -> waterService.acceptReports(List.of(999L)))
+    final var ids = List.of(999L);
+    assertThatThrownBy(() -> waterService.acceptReports(ids))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void acceptReports_attemptingToAcceptAlreadyAcceptedReport_ThrowsException() {
+    final var flavour = waterService.createFlavour("Apple");
+    WaterStateDto dto = new WaterStateDto()
+        .flavour(new WaterFlavourDto().id(flavour.getId().longValue()).name("Apple"))
+        .waterLevel(80)
+        .emptyGallons(1)
+        .fullGallons(2);
+    waterService.defineState(dto);
+    WaterReport report = waterService.registerReport(new WaterReportDto()
+        .kind(WaterReportKind.PERCENTAGE)
+        .value(50));
+    final var reportId = List.of(report.getId().longValue());
+    waterService.acceptReports(reportId);
+    assertThat(waterStateRepository.findAll()).hasSize(2);
+    assertThat(waterReportRepository.findAll()).hasSize(2);
+    assertThat(waterService.currentState())
+        .returns(50, WaterState::getCurrPct)
+        .returns(2, WaterState::getFullCnt)
+        .returns(1, WaterState::getEmptyCnt);
+
+    assertThatThrownBy(() -> waterService.acceptReports(reportId))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("One or more reports are not pending");
+
+    // check state and report count is unchanged:
+    assertThat(waterStateRepository.findAll()).hasSize(2);
+    assertThat(waterReportRepository.findAll()).hasSize(2);
+    assertThat(waterService.currentState())
+        .returns(50, WaterState::getCurrPct)
+        .returns(2, WaterState::getFullCnt)
+        .returns(1, WaterState::getEmptyCnt);
   }
 
   @Test
   void acceptReports_NotLoggedIn_ThrowsException() {
     Mockito.when(userService.currentUser()).thenReturn(null);
-    assertThatThrownBy(() -> waterService.acceptReports(List.of(1L)))
+    final var ids = List.of(1L);
+    assertThatThrownBy(() -> waterService.acceptReports(ids))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Log-in is required");
   }
@@ -331,8 +480,8 @@ class WaterServiceTest {
   void renameFlavour_AlreadyExists_ThrowsException() {
     waterService.createFlavour("Apple");
     WaterFlavour orange = waterService.createFlavour("Orange");
-
-    assertThatThrownBy(() -> waterService.renameFlavour(orange.getId().longValue(), "Apple"))
+    final var flavourId = orange.getId().longValue();
+    assertThatThrownBy(() -> waterService.renameFlavour(flavourId, "Apple"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("already exists");
   }
