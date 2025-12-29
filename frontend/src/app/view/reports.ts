@@ -18,8 +18,8 @@ import {asErrorMsg} from '../service/errors';
         <div class="reports-description">
           <p>The table below shows the currently pending reports in chronological order.</p>
           <p>You may reject any of them by clicking the <i
-            class="pi pi-times-circle"></i><b>Reject</b> button for the corresponding row, or accept
-            them by clicking <i class="pi pi-check-circle"></i><b>Accept</b>.</p>
+            class="pi pi-times-circle"></i><b> Reject</b> button for the corresponding row, or accept
+            them by clicking <i class="pi pi-check-circle"></i><b> Accept</b>.</p>
           <p><strong>When you accept a report, you automatically accept all other older reports
             too!</strong></p>
         </div>
