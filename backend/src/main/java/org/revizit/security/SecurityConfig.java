@@ -31,7 +31,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                  JwtAuthenticationFilter jwtAuthFilter,
@@ -42,19 +41,18 @@ public class SecurityConfig {
     http
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/login", "/api/water/current", "/api/flavour", "/api/report").permitAll()
+            .requestMatchers("/api/auth/login", "/api/water/current", "/api/flavour", "/api/report")
+            .permitAll()
             .requestMatchers("/actuator/**").permitAll() // If needed
-            .anyRequest().authenticated()
-        )
+            .anyRequest().authenticated())
         .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationManager(authenticationManager)
         .userDetailsService(userService)
         .authenticationProvider(authenticationProvider)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(it -> it
-            .accessDeniedHandler((request, response, accessDeniedException) -> response.setStatus(
+            .accessDeniedHandler((_, response, _) -> response.setStatus(
                 HttpStatus.FORBIDDEN.value()))
             .addObjectPostProcessor(new ObjectPostProcessor<ExceptionTranslationFilter>() {
 

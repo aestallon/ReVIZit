@@ -1,48 +1,62 @@
 @startuml
-'https://plantuml.com/class-diagram
-entity user_account {
-id : int username : varchar(255)
-email : varchar(255)
-display_name : varchar(255)
-}
 
+top to bottom direction
+skinparam linetype ortho
+
+entity flavour_request {
+  name: text
+  submitted_at: timestamp
+  submitted_by: integer
+  id: integer
+}
+entity user_account {
+  username: text
+  mail_addr: text
+  user_pw: text
+  user_role: varchar(5)
+  inactive: boolean
+  reg_token: uuid
+  token_exp: timestamp
+  profile_id: integer
+  id: integer
+}
+entity water_flavour {
+  name: text
+  inactive: boolean
+  id: integer
+}
+entity water_report {
+  kind: report_type
+  val: integer
+  reported_at: timestamp
+  reported_by: integer
+  approved_at: timestamp
+  approved_by: integer
+  flavour: integer
+  rejected_at: timestamp
+  rejected_by: integer
+  id: integer
+}
 entity water_state {
-id : int empty_cnt : int
-full_cnt : int
-curr_pct : int
-created_at : timestamp
-report : int
+  empty_cnt: integer
+  full_cnt: integer
+  curr_pct: integer
+  created_at: timestamp
+  report: integer
+  id: integer
 }
 
 enum report_type {
-BALLOON_CHANGE,
-SET_PERCENTAGE,
-BALLOON_REFILL
+    BALLOON_CHANGE
+    SET_PERCENTAGE
+    BALLOON_REFILL
 }
-entity water_report {
-kind : report_type
-val : int
-flavour : int
-reported_at : timestamp
-reported_by : int
-approved_at : timestamp
-approved_by : int
-}
-entity water_flavour {
-id : int
-name : text
-inactive: boolean
-}
-entity flavour_request {
-id : int
-name : text
-submitted_at : timestamp
-submitted_by : int
-}
-water_state::report --> water_report
-water_state::reported_by --> user_account
-water_report::flavour --> water_flavour
-water_report::reported_by --> user_account
-water_report::approved_by --> user_account
-flavour_request::submitted_by --> user_account
+
+flavour_request  -[plain]-^  user_account          : "submitted_by:id"
+water_report     -[plain]-^  user_account          : "approved_by:id"
+water_report     -[plain]-^  user_account          : "rejected_by:id"
+water_report     -[plain]-^  user_account          : "reported_by:id"
+water_report     -[plain]-^  water_flavour         : "flavour:id"
+water_state      -[plain]-^  water_report          : "report:id"
+report_type     ^-[dashed]- water_report::kind     : "type def"
 @enduml
