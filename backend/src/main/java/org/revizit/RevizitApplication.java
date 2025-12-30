@@ -1,5 +1,6 @@
 package org.revizit;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -31,6 +32,11 @@ public class RevizitApplication {
 
   public static void main(String[] args) {
     SpringApplication.run(RevizitApplication.class, args);
+  }
+
+  @Bean
+  public Clock clock() {
+    return Clock.systemDefaultZone();
   }
 
   @Bean

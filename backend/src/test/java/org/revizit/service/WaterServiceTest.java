@@ -1,6 +1,9 @@
 package org.revizit.service;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +55,9 @@ class WaterServiceTest {
   @MockitoBean
   private UserService userService;
 
+  @MockitoBean
+  private Clock clock;
+
   private UserAccount adminUser;
   private UserAccount regularUser;
 
@@ -78,6 +84,9 @@ class WaterServiceTest {
 
     Mockito.when(userService.currentUser()).thenReturn(adminUser);
     Mockito.when(userService.isCurrentUserAdmin()).thenReturn(true);
+
+    Mockito.when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
+    Mockito.when(clock.instant()).thenAnswer(_ -> Instant.now());
   }
 
   @Test
@@ -365,16 +374,52 @@ class WaterServiceTest {
   @Test
   void stateHistory_ReturnsCorrectRange() {
     WaterFlavour flavour = waterService.createFlavour("Apple");
-    LocalDateTime now = LocalDateTime.now();
 
+    // T0: Initial state at 10:00
+    Instant t0 = Instant.parse("2025-01-01T10:00:00Z");
+    Mockito.when(clock.instant()).thenReturn(t0);
     waterService.defineState(new WaterStateDto()
         .flavour(new WaterFlavourDto().id(flavour.getId().longValue()).name("Apple"))
         .waterLevel(100)
         .emptyGallons(0)
         .fullGallons(10));
 
-    List<WaterState> history = waterService.stateHistory(now.minusHours(1), now.plusHours(1));
-    assertThat(history).hasSize(1);
+    // T1: Report at 11:00, accepted at 11:30
+    Instant t1Report = Instant.parse("2025-01-01T11:00:00Z");
+    Mockito.when(clock.instant()).thenReturn(t1Report);
+    WaterReport report1 = waterService.registerReport(new WaterReportDto()
+        .kind(WaterReportKind.PERCENTAGE)
+        .value(80));
+
+    Instant t1Accept = Instant.parse("2025-01-01T11:30:00Z");
+    Mockito.when(clock.instant()).thenReturn(t1Accept);
+    waterService.acceptReports(List.of(report1.getId().longValue()));
+
+    // T2: Report at 12:00, accepted at 12:30
+    Instant t2Report = Instant.parse("2025-01-01T12:00:00Z");
+    Mockito.when(clock.instant()).thenReturn(t2Report);
+    WaterReport report2 = waterService.registerReport(new WaterReportDto()
+        .kind(WaterReportKind.PERCENTAGE)
+        .value(60));
+
+    Instant t2Accept = Instant.parse("2025-01-01T12:30:00Z");
+    Mockito.when(clock.instant()).thenReturn(t2Accept);
+    waterService.acceptReports(List.of(report2.getId().longValue()));
+
+    // Check history ranges
+    LocalDateTime t1Dt = LocalDateTime.ofInstant(t1Report, ZoneId.of("UTC"));
+    LocalDateTime t2Dt = LocalDateTime.ofInstant(t2Report, ZoneId.of("UTC"));
+
+    List<WaterState> history = waterService.stateHistory(t1Dt.minusSeconds(1), t2Dt.plusSeconds(1));
+    // Should include states from t1Accept and t2Accept
+    assertThat(history).hasSize(2);
+    assertThat(history.get(0).getCurrPct()).isEqualTo(60);
+    assertThat(history.get(1).getCurrPct()).isEqualTo(80);
+
+    // Check range excluding the first one
+    List<WaterState> history2 = waterService.stateHistory(t1Dt.plusMinutes(1), t2Dt.plusSeconds(1));
+    assertThat(history2).hasSize(1);
+    assertThat(history2.getFirst().getCurrPct()).isEqualTo(60);
   }
 
   @Test

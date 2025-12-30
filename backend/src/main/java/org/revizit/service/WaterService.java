@@ -1,5 +1,6 @@
 package org.revizit.service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WaterService {
 
+  private final Clock clock;
   private final UserService userService;
   private final WaterStateRepository waterStateRepository;
   private final WaterReportRepository waterReportRepository;
@@ -44,7 +46,7 @@ public class WaterService {
     }
 
     final var flavourId = dto.getFlavour().getId();
-    final var now = LocalDateTime.now();
+    final var now = LocalDateTime.now(clock);
     var report = WaterReport.builder()
         .reportedAt(now)
         .reportedBy(userService.currentUser())
@@ -72,7 +74,7 @@ public class WaterService {
     final var currReport = currState.getReport();
 
     final var reportBuilder = WaterReport.builder()
-        .reportedAt(LocalDateTime.now())
+        .reportedAt(LocalDateTime.now(clock))
         .reportedBy(userService.currentUser());
     switch (dto.getKind()) {
       case PERCENTAGE -> reportBuilder
@@ -121,7 +123,7 @@ public class WaterService {
     }
 
     var state = currentState();
-    final var now = LocalDateTime.now();
+    final var now = LocalDateTime.now(clock);
     for (final var report : reportsToAccept) {
 
       state = switch (state.accept(report)) {
@@ -158,7 +160,7 @@ public class WaterService {
       reportsToReject.add(waterReport);
     }
 
-    final var now = LocalDateTime.now();
+    final var now = LocalDateTime.now(clock);
     for (final var report : reportsToReject) {
       report.setRejectedAt(now);
       report.setRejectedBy(user);

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
@@ -49,7 +50,7 @@ public class RestExceptionHandler {
   public ResponseEntity<ApiError> constraintViolationException(final ConstraintViolationException e,
                                                                final WebRequest request) {
     final String msg = e.getConstraintViolations().stream()
-        .map(it -> it.getMessage())
+        .map(ConstraintViolation::getMessage)
         .collect(Collectors.joining("; "));
     return errorOf(HttpStatus.BAD_REQUEST, msg, request);
   }
