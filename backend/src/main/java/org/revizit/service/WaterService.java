@@ -40,6 +40,7 @@ public class WaterService {
     return waterStateRepository.findByCreatedAtBetweenOrderByCreatedAtDesc(from, to);
   }
 
+  @Transactional
   public WaterState defineState(WaterStateDto dto) {
     if (!userService.isCurrentUserAdmin()) {
       throw new IllegalStateException("Only admins can define water state!");
@@ -71,6 +72,10 @@ public class WaterService {
     Objects.requireNonNull(dto, "Water Report DTO cannot be null!");
 
     final var currState = currentState();
+    if (currState == null) {
+      throw new IllegalStateException("Initial water state is not yet defined!");
+    }
+
     final var currReport = currState.getReport();
 
     final var reportBuilder = WaterReport.builder()
@@ -83,7 +88,7 @@ public class WaterService {
           .flavour(currReport.getFlavour());
       case SWAP -> reportBuilder
           .kind(ReportType.BALLOON_CHANGE)
-          .val(100)
+          .val(WaterState.WATER_LEVEL_MAX)
           .flavour(getFlavour(dto.getFlavourId())
               .orElseThrow(() -> new IllegalArgumentException(
                   "Invalid flavour id: " + dto.getFlavourId())));
@@ -123,6 +128,10 @@ public class WaterService {
     }
 
     var state = currentState();
+    if (state == null) {
+      throw new IllegalStateException("Initial water state is not yet defined!");
+    }
+
     final var now = LocalDateTime.now(clock);
     for (final var report : reportsToAccept) {
 
@@ -143,6 +152,7 @@ public class WaterService {
     return state;
   }
 
+  @Transactional
   public void rejectReports(List<Long> ids) {
     final var user = userService.currentUser();
     if (user == null) {

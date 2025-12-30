@@ -32,8 +32,8 @@ public class WaterReport {
   @Column(nullable = false)
   private ReportType kind;
 
-  @Min(0)
-  @Max(100)
+  @Min(WaterState.WATER_LEVEL_MIN)
+  @Max(WaterState.WATER_LEVEL_MAX)
   private int val;
 
   @Column(name = "reported_at", nullable = false)

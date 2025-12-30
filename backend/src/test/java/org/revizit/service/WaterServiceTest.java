@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.ConstraintViolationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -325,6 +324,16 @@ class WaterServiceTest {
         .satisfies(it -> assertThat(it.getApprovedBy()).isNull())
         .satisfies(it -> assertThat(it.getRejectedAt()).isNotNull())
         .satisfies(it -> assertThat(it.getRejectedBy().getId()).isEqualTo(adminUser.getId()));
+  }
+
+  @Test
+  void registerReport_attemptingToRegisterWhenStateIsYetUndefined_ThrowsException() {
+    final var dto = new WaterReportDto()
+        .kind(WaterReportKind.PERCENTAGE)
+        .value(50);
+    assertThatThrownBy(() -> waterService.registerReport(dto))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Initial water state is not yet defined");
   }
 
   @Test

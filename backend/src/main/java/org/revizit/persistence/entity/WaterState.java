@@ -20,20 +20,25 @@ import org.springframework.data.annotation.PersistenceCreator;
 @Builder
 @AllArgsConstructor
 public class WaterState {
+
+  public static final int GALLON_COUNT_MIN = 0;
+  public static final int WATER_LEVEL_MIN = 0;
+  public static final int WATER_LEVEL_MAX = 100;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @Min(value = 0, message = "{water-state.empty-count.min}")
+  @Min(value = GALLON_COUNT_MIN, message = "{water-state.empty-count.min}")
   @Column(name = "empty_cnt", nullable = false)
   private int emptyCnt;
 
-  @Min(value = 0, message = "{water-state.full-count.min}")
+  @Min(value = GALLON_COUNT_MIN, message = "{water-state.full-count.min}")
   @Column(name = "full_cnt", nullable = false)
   private int fullCnt;
 
-  @Min(value = 0, message = "{water-state.curr-percentage.min}")
-  @Max(value = 100, message = "{water-state.curr-percentage.max}")
+  @Min(value = WATER_LEVEL_MIN, message = "{water-state.curr-percentage.min}")
+  @Max(value = WATER_LEVEL_MAX, message = "{water-state.curr-percentage.max}")
   @Column(name = "curr_pct", nullable = false)
   private int currPct;
 
@@ -81,16 +86,16 @@ public class WaterState {
         final var newState = new WaterState();
         newState.setEmptyCnt(emptyCnt + 1);
         newState.setFullCnt(fullCnt - 1);
-        newState.setCurrPct(100);
+        newState.setCurrPct(WATER_LEVEL_MAX);
         yield new ReportResult.New(newState);
       }
       case BALLOON_REFILL -> {
-        if (emptyCnt == 0) {
+        if (emptyCnt == GALLON_COUNT_MIN) {
           yield ReportResult.Rejection.INSTANCE;
         }
 
         final var newState = new WaterState();
-        newState.setEmptyCnt(0);
+        newState.setEmptyCnt(GALLON_COUNT_MIN);
         newState.setFullCnt(fullCnt + emptyCnt);
         newState.setCurrPct(currPct);
         report.setFlavour(this.report.getFlavour());
