@@ -1,10 +1,15 @@
 package org.revizit.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import static java.util.stream.Collectors.toSet;
 import org.jspecify.annotations.NonNull;
 import org.revizit.persistence.entity.UserAccount;
+import org.revizit.persistence.entity.UserProfile;
 import org.revizit.persistence.repository.UserAccountRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +31,9 @@ public class UserService implements UserDetailsService {
   private final UserAccountRepository userAccountRepository;
   private final PasswordEncoder passwordEncoder;
   private final ImageStorageService imageStorageService;
+
+  @Value("${revizit.default-password:asd}")
+  private String defaultPassword;
 
   public UserAccount currentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -126,7 +134,64 @@ public class UserService implements UserDetailsService {
 
   @Transactional(readOnly = true)
   public List<UserAccount> activeUsers() {
+    if (!isCurrentUserAdmin()) {
+      throw new NotAuthorisedException();
+    }
     return userAccountRepository.findByInactive(false);
+  }
+
+  @Transactional(readOnly = true)
+  public List<UserAccount> inactiveUsers() {
+    return userAccountRepository.findByInactive(true);
+  }
+
+  @Transactional
+  public void createUsers(List<DataImportService.UserImport> userImports) {
+    if (!isCurrentUserAdmin()) {
+      throw new NotAuthorisedException();
+    }
+
+    final Set<String> usernames = userImports.stream()
+        .map(DataImportService.UserImport::username)
+        .collect(toSet());
+    if (usernames.isEmpty()) {
+      return;
+    }
+
+    final Set<String> existingUsernames = userAccountRepository.findByUsernameIn(usernames)
+        .stream().map(UserAccount::getUsername)
+        .collect(toSet());
+    if (existingUsernames.size() == usernames.size()) {
+      return;
+    }
+
+    final var users = new ArrayList<UserAccount>(usernames.size());
+    for (final var userImport : userImports) {
+      final var username = userImport.username();
+      final var mail = userImport.email();
+      final var admin = userImport.admin();
+      if (existingUsernames.contains(username)) {
+        continue;
+      }
+
+      final var user = new UserAccount();
+      user.setUsername(username);
+      user.setUserPw(passwordEncoder.encode(defaultPassword));
+      user.setMailAddr(mail);
+      user.setUserRole(admin ? ROLE_ADMIN : ROLE_PLAIN);
+      user.setInactive(false);
+
+      final var profile = new UserProfile();
+      profile.setDisplayName(username);
+      user.setProfile(profile);
+      users.add(user);
+    }
+
+    if (users.isEmpty()) {
+      return;
+    }
+
+    userAccountRepository.saveAll(users);
   }
 
 }

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, computed, inject, signal} from '@angular/core';
+import {AfterViewInit, Component, computed, inject, signal, viewChild} from '@angular/core';
 import {UserAdminService} from '../../service/user-admin.service';
 import {MessageService, PrimeIcons} from 'primeng/api';
 import {asErrorMsg} from '../../service/errors';
@@ -7,8 +7,8 @@ import {Message} from 'primeng/message';
 import {Button} from 'primeng/button';
 import {UserService} from '../../service/user.service';
 import {Profile} from '../../../api/revizit';
-import {Avatar} from 'primeng/avatar';
 import {UserCard} from '../user.card';
+import {FileSelectEvent, FileUpload} from 'primeng/fileupload';
 
 @Component({
   selector: 'app-user-def',
@@ -25,13 +25,15 @@ import {UserCard} from '../user.card';
           </p-message>
         </div>
         <span style="flex: 1;"></span>
-        <p-button label="Import Users"
-                  [icon]="PrimeIcons.PLUS_CIRCLE"
-                  severity="primary"
-                  [loading]="loading()"
-                  [disabled]="unavailable()"
-                  (onClick)="importUsers()">
-        </p-button>
+        <p-fileupload #userUploader
+                      chooseLabel="Import Users"
+                      [chooseIcon]="PrimeIcons.PLUS_CIRCLE"
+                      mode="basic"
+                      [auto]="false"
+                      [disabled]="loading() || unavailable()"
+                      accept=".csv"
+                      (onSelect)="importUsers($event)">
+        </p-fileupload>
       </ng-template>
 
       <ng-template pTemplate="header">
@@ -70,8 +72,8 @@ import {UserCard} from '../user.card';
     TableModule,
     Message,
     Button,
-    Avatar,
-    UserCard
+    UserCard,
+    FileUpload
   ],
   styles: `
 
@@ -90,6 +92,8 @@ export class UserDef implements AfterViewInit {
   unavailable = signal(false);
   users = computed(() => this.service.users());
 
+  userUploader = viewChild.required<FileUpload>('userUploader');
+
   ngAfterViewInit() {
     this.service.fetchUsers()
       .then(() => {
@@ -102,15 +106,29 @@ export class UserDef implements AfterViewInit {
       });
   }
 
-  importUsers() {
-
+  importUsers(e: FileSelectEvent) {
+    this.loading.set(true);
+    this.service.createUsers(e.files[0])
+      .then(() => {
+        this.loading.set(false);
+        this.msg.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Users imported successfully!',
+          life: 3000
+        });
+        this.userUploader().clear();
+      })
+      .catch(err => {
+        this.msg.add(asErrorMsg(err, 'Failed to import users'));
+      });
   }
 
   isMyUser(p: Profile) {
     return p.username === this.myUsername();
   }
 
-  initials(p : Profile) {
+  initials(p: Profile) {
     const name = p.data.name ?? '';
     if (name.length === 0) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();

@@ -8,6 +8,7 @@ import org.revizit.rest.api.UserManagementApiDelegate;
 import org.revizit.rest.model.Profile;
 import org.revizit.rest.model.ProfileData;
 import org.revizit.rest.model.UserSelector;
+import org.revizit.service.DataImportService;
 import org.revizit.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +21,15 @@ import lombok.RequiredArgsConstructor;
 public class UserManagementApiDelegateImpl implements UserManagementApiDelegate {
 
   private final UserService userService;
+  private final DataImportService dataImportService;
   @Value("${revizit.default-password:asd}")
   private String defaultPassword;
 
   @Override
   public ResponseEntity<Void> createUsers(MultipartFile file) {
-    return UserManagementApiDelegate.super.createUsers(file);
+    final var imports = dataImportService.importUsersFromCsv(file);
+    userService.createUsers(imports);
+    return ResponseEntity.ok().build();
   }
 
   @Override
