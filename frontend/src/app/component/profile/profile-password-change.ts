@@ -7,6 +7,7 @@ import {MessageService, PrimeIcons} from 'primeng/api';
 import {asErrorMsg} from '../../service/errors';
 import {FloatLabel} from 'primeng/floatlabel';
 import {Message} from 'primeng/message';
+import {Divider} from 'primeng/divider';
 
 @Component({
   selector: 'app-profile-password-change',
@@ -51,6 +52,18 @@ import {Message} from 'primeng/message';
                   (onClick)="changePassword()">
         </p-button>
       </div>
+      <p-divider layout="vertical"></p-divider>
+      <p-message class="info-block" severity="info" [icon]="PrimeIcons.INFO_CIRCLE">
+        <p>You may change your current password by:</p>
+        <ol>
+          <li>entering your current password in the first field,</li>
+          <li>entering a new password in the second field,</li>
+          <li>repeating your new password in the third, then</li>
+          <li>clicking <i [class]="PrimeIcons.LOCK"></i><strong> Change Password</strong></li>
+        </ol>
+        <p>The only requirement for your new password is for it to be <strong>at least 8 characters
+          long</strong>.</p>
+      </p-message>
 
     </div>
   `,
@@ -59,7 +72,8 @@ import {Message} from 'primeng/message';
     Password,
     FormsModule,
     FloatLabel,
-    Message
+    Message,
+    Divider
   ],
   styles: `
     .pw-change-container {
@@ -72,6 +86,10 @@ import {Message} from 'primeng/message';
     gap: 2rem;
     padding-top: 2em;
     padding-bottom: 2em;
+  }
+
+  .info-block {
+    height: fit-content;
   }
 
   .pw-save-btn {

@@ -65,7 +65,7 @@ public class WaterState {
 
   public WaterStateDetail toDetail() {
     final var reportedBy = report.getReportedBy();
-    final var reporter = reportedBy != null ? reportedBy.getUsername() : "anonymous";
+    final var reporter = UserAccount.extractDisplayName(reportedBy);
     return new WaterStateDetail()
         .waterState(toDto())
         .id(id.longValue())

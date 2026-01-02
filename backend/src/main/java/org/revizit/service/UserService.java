@@ -61,7 +61,7 @@ public class UserService implements UserDetailsService {
   }
 
   @Override
-  public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
+  public @NonNull UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
     return userAccountRepository
         .findByUsername(username)
         .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
@@ -236,7 +236,8 @@ public class UserService implements UserDetailsService {
 
   public Profile toDto(UserAccount user) {
     UserProfile profile = user.getProfile();
-    final String pfp, displayName;
+    final String pfp;
+    final String displayName;
     if (profile == null) {
       pfp = null;
       displayName = user.getUsername();

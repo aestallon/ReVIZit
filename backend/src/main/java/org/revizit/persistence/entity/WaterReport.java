@@ -67,7 +67,7 @@ public class WaterReport {
   }
 
   public WaterReportDetail toDetail() {
-    final var reporter = reportedBy != null ? reportedBy.getUsername() : "anonymous";
+    final var reporter = UserAccount.extractDisplayName(reportedBy);
     final var flavourId = flavour != null ? flavour.getId() : -1L;
     return new WaterReportDetail()
         .id(id.longValue())
