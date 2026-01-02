@@ -1,4 +1,4 @@
-import {Component, computed, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, OnInit} from '@angular/core';
 import {WaterGallonComponent} from '../component/gallon';
 import {DatePipe} from '@angular/common';
 import {Button} from 'primeng/button';
@@ -102,7 +102,6 @@ import {RevizitService} from '../service/revizit.service';
       font-size: 4rem;
       font-weight: 600;
     }
-
 
 
     /* Percentage emphasis */
@@ -235,14 +234,10 @@ export class Home implements OnInit {
     return Array.from({length: this.emptyCount()}, (_, i) => i + 1);
   });
 
-
-  constructor() {
+  ngOnInit() {
     this.service.loadWaterState();
   }
 
-  ngOnInit(): void {
-    this.navigationService.wantsToMakeAReport = false;
-  }
 
   protected readonly PrimeIcons = PrimeIcons;
 

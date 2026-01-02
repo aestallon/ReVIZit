@@ -7,13 +7,12 @@ import {RevizitService} from '../service/revizit.service';
 import {Menu} from 'primeng/menu';
 import {UserBtn} from './user.btn';
 import {DarkmodeService} from '../service/darkmode.service';
-import {ToggleButton} from 'primeng/togglebutton';
 import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [Button, RouterLink, RouterLinkActive, Menu, UserBtn, ToggleButton, FormsModule],
+  imports: [Button, RouterLink, RouterLinkActive, Menu, UserBtn, FormsModule],
   template: `
     <header class="header-container">
       <div class="header-left">
