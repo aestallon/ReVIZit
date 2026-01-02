@@ -11,3 +11,50 @@ html {
 body {
   margin: 0;
 }
+
+.water-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #f0f7ff 0%, #e0f0ff 100%);
+  z-index: -1;
+  overflow: hidden;
+}
+
+.revizit-dark .water-container {
+  background: linear-gradient(180deg, #121212 0%, #121212 100%);
+}
+
+.cta-content {
+  border-radius: 16px;
+  background-color: #eee;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.revizit-dark .cta-content {
+  background-color: #222;
+}
+
+.cta-content span {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.revizit-dark .cta-content span {
+  color: #eee;
+}
+
+.gallon-grey {
+  filter: grayscale(100%) brightness(0.65);
+}
+
+.revizit-dark .gallon-grey {
+  filter: grayscale(100%) brightness(0.2);
+}

@@ -130,22 +130,6 @@ import {RevizitService} from '../service/revizit.service';
       flex: 1;
     }
 
-    .cta-content {
-      border-radius: 16px;
-      background-color: #eee;
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-    }
-
-    .cta-content span {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #333;
-    }
-
     .gallon-footer {
       display: flex;
       flex-direction: column;

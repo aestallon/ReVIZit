@@ -6,11 +6,14 @@ import {MenuItem, PrimeIcons} from 'primeng/api';
 import {RevizitService} from '../service/revizit.service';
 import {Menu} from 'primeng/menu';
 import {UserBtn} from './user.btn';
+import {DarkmodeService} from '../service/darkmode.service';
+import {ToggleButton} from 'primeng/togglebutton';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [Button, RouterLink, RouterLinkActive, Menu, UserBtn],
+  imports: [Button, RouterLink, RouterLinkActive, Menu, UserBtn, ToggleButton, FormsModule],
   template: `
     <header class="header-container">
       <div class="header-left">
@@ -49,7 +52,13 @@ import {UserBtn} from './user.btn';
                     routerLinkActive="active-route"
                     [icon]="PrimeIcons.HOME"
                     label="Home"
-                    variant="text"></p-button>
+                    variant="text">
+          </p-button>
+          <p-toggle-button [onIcon]="PrimeIcons.SUN"
+                           [offIcon]="PrimeIcons.MOON"
+                           [ngModel]="darkMode.isDark()"
+                           (onChange)="darkMode.toggleDarkMode()">
+          </p-toggle-button>
 
           <div class="auth-section">
             @if (userService.isAuthenticated()) {
@@ -187,6 +196,7 @@ import {UserBtn} from './user.btn';
 export class Header {
   protected readonly userService = inject(UserService);
   protected readonly revizitService = inject(RevizitService);
+  protected readonly darkMode = inject(DarkmodeService);
   protected readonly PrimeIcons = PrimeIcons;
 
   pendingCount = computed(() => {

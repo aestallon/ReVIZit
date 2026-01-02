@@ -72,9 +72,6 @@ const SVG_WIDTH = 512;
       display: block;
     }
 
-    .gallon-grey {
-      filter: grayscale(100%) brightness(0.65);
-    }
 
     .gallon-water {
       filter: none;

@@ -12,16 +12,6 @@ import { Component } from '@angular/core';
     </div>
   `,
   styles: `
-    .water-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(180deg, #f0f7ff 0%, #e0f0ff 100%);
-      z-index: -1;
-      overflow: hidden;
-    }
 
     .wave {
       position: absolute;
