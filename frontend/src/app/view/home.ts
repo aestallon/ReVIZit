@@ -103,12 +103,7 @@ import {RevizitService} from '../service/revizit.service';
       font-weight: 600;
     }
 
-    .home-description h2 {
-      font-size: 3rem;
-      font-weight: 400;
-      margin: 0;
-      color: #444;
-    }
+
 
     /* Percentage emphasis */
     .home-description h1 span {

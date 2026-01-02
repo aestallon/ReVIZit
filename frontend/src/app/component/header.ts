@@ -54,16 +54,16 @@ import {FormsModule} from '@angular/forms';
                     label="Home"
                     variant="text">
           </p-button>
-          <p-toggle-button [onIcon]="PrimeIcons.SUN"
-                           [offIcon]="PrimeIcons.MOON"
-                           [ngModel]="darkMode.isDark()"
-                           (onChange)="darkMode.toggleDarkMode()">
-          </p-toggle-button>
+          <p-button [icon]="darkMode.isDark() ? PrimeIcons.SUN : PrimeIcons.MOON"
+                    (onClick)="darkMode.toggleDarkMode()"
+                    variant="text">
+          </p-button>
 
           <div class="auth-section">
             @if (userService.isAuthenticated()) {
               <p-menu #menu [model]="userActions()" [popup]="true"></p-menu>
-              <app-user-btn [profile]="userService.profile()?? undefined" (onClick)="menu.toggle($event)"></app-user-btn>
+              <app-user-btn [profile]="userService.profile()?? undefined"
+                            (onClick)="menu.toggle($event)"></app-user-btn>
             } @else {
               <p-button label="Log In"
                         [icon]="PrimeIcons.SIGN_IN"

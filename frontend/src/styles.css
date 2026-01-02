@@ -26,6 +26,16 @@ body {
 .revizit-dark .water-container {
   background: linear-gradient(180deg, #121212 0%, #121212 100%);
 }
+.home-description h2 {
+  font-size: 3rem;
+  font-weight: 400;
+  margin: 0;
+  color: #444;
+}
+
+.revizit-dark .home-description h2 {
+  color: #bbb;
+}
 
 .cta-content {
   border-radius: 16px;
