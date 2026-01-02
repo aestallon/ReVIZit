@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toList;
 import org.revizit.persistence.entity.UserAccount;
 import org.revizit.rest.api.UserManagementApiDelegate;
 import org.revizit.rest.model.Profile;
-import org.revizit.rest.model.ProfileData;
 import org.revizit.rest.model.UserSelector;
 import org.revizit.service.DataImportService;
 import org.revizit.service.UserService;
@@ -43,17 +42,8 @@ public class UserManagementApiDelegateImpl implements UserManagementApiDelegate 
   @Override
   public ResponseEntity<List<Profile>> getAllUsers() {
     return userService.activeUsers().stream()
-        .map(this::toDto)
+        .map(userService::toDto)
         .collect(collectingAndThen(toList(), ResponseEntity::ok));
-  }
-
-
-  private Profile toDto(UserAccount user) {
-    return new Profile()
-        .isAdmin(userService.isUserAdmin(user))
-        .username(user.getUsername())
-        .pfp(user.getProfile().getProfilePictureUrl())
-        .data(new ProfileData(user.getProfile().getDisplayName(), user.getMailAddr()));
   }
 
   @Override
@@ -70,7 +60,7 @@ public class UserManagementApiDelegateImpl implements UserManagementApiDelegate 
         user,
         profile.getData().getName(),
         profile.getData().getEmail());
-    return ResponseEntity.ok(toDto(user));
+    return ResponseEntity.ok(userService.toDto(user));
   }
 
   @Override
@@ -79,6 +69,6 @@ public class UserManagementApiDelegateImpl implements UserManagementApiDelegate 
     var user = (UserAccount) userService.loadUserByUsername(userSelector.getUsername());
     final var admin = userService.isUserAdmin(user);
     user = userService.markAdmin(userSelector.getUsername(), !admin);
-    return ResponseEntity.ok(toDto(user));
+    return ResponseEntity.ok(userService.toDto(user));
   }
 }

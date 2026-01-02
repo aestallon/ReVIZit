@@ -1,6 +1,7 @@
 package org.revizit.rest.impl;
 
 import org.revizit.persistence.entity.UserAccount;
+import org.revizit.persistence.entity.UserProfile;
 import org.revizit.rest.api.ProfileApiDelegate;
 import org.revizit.rest.model.PasswordChangeRequest;
 import org.revizit.rest.model.PfpUpdateResponse;
@@ -21,15 +22,7 @@ public class ProfileApiDelegateImpl implements ProfileApiDelegate {
   @Override
   public ResponseEntity<Profile> getMyProfile() {
     final UserAccount user = userService.currentUser();
-    return ResponseEntity.ok(toDto(user));
-  }
-
-  private Profile toDto(UserAccount user) {
-    return new Profile()
-        .isAdmin(userService.isUserAdmin(user))
-        .username(user.getUsername())
-        .pfp(user.getProfile().getProfilePictureUrl())
-        .data(new ProfileData(user.getProfile().getDisplayName(), user.getMailAddr()));
+    return ResponseEntity.ok(userService.toDto(user));
   }
 
   @Override
@@ -53,7 +46,7 @@ public class ProfileApiDelegateImpl implements ProfileApiDelegate {
         userService.currentUser(),
         profileData.getName(),
         profileData.getEmail());
-    return ResponseEntity.ok(toDto(res));
+    return ResponseEntity.ok(userService.toDto(res));
   }
 
   @Override

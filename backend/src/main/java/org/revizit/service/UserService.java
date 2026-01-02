@@ -10,6 +10,8 @@ import org.jspecify.annotations.NonNull;
 import org.revizit.persistence.entity.UserAccount;
 import org.revizit.persistence.entity.UserProfile;
 import org.revizit.persistence.repository.UserAccountRepository;
+import org.revizit.rest.model.Profile;
+import org.revizit.rest.model.ProfileData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -112,6 +114,7 @@ public class UserService implements UserDetailsService {
     userAccount.setUsername("deleted-user-" + UUID.randomUUID());
     userAccount.setUserRole(ROLE_PLAIN);
     userAccount.setUserPw("not-set");
+    userAccount.setMailAddr("not-set");
     userAccountRepository.save(userAccount);
   }
 
@@ -229,6 +232,24 @@ public class UserService implements UserDetailsService {
 
     user.setUserRole(roleToSet);
     return userAccountRepository.save(user);
+  }
+
+  public Profile toDto(UserAccount user) {
+    UserProfile profile = user.getProfile();
+    final String pfp, displayName;
+    if (profile == null) {
+      pfp = null;
+      displayName = user.getUsername();
+    } else {
+      pfp = profile.getProfilePictureUrl();
+      displayName = profile.getDisplayName();
+    }
+
+    return new Profile()
+        .isAdmin(isUserAdmin(user))
+        .username(user.getUsername())
+        .pfp(pfp)
+        .data(new ProfileData(displayName, user.getMailAddr()));
   }
 
 }
