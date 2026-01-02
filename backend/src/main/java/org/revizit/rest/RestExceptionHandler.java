@@ -3,6 +3,7 @@ package org.revizit.rest;
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
 import org.revizit.rest.model.ApiError;
+import org.revizit.service.ImageStorageException;
 import org.revizit.service.NotAuthorisedException;
 import org.revizit.service.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,12 @@ public class RestExceptionHandler {
     return errorOf(HttpStatus.INTERNAL_SERVER_ERROR, "Oops, something went awry!", request);
   }
 
+  @ExceptionHandler(ImageStorageException.class)
+  public ResponseEntity<ApiError> imageStorageException(final ImageStorageException e,
+                                                        final WebRequest request) {
+    return errorOf(HttpStatus.INTERNAL_SERVER_ERROR, "File operation failed!", request);
+  }
+
   @ExceptionHandler(IllegalStateException.class)
   public ResponseEntity<ApiError> illegalStateException(final IllegalStateException e,
                                                         final WebRequest request) {
@@ -62,7 +69,8 @@ public class RestExceptionHandler {
   }
 
   @ExceptionHandler(NotAuthorisedException.class)
-  public ResponseEntity<ApiError> notAuthorisedException(final NotAuthorisedException e, final WebRequest request) {
+  public ResponseEntity<ApiError> notAuthorisedException(final NotAuthorisedException e,
+                                                         final WebRequest request) {
     return errorOf(HttpStatus.UNAUTHORIZED, e.getMessage(), request);
   }
 

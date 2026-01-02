@@ -21,30 +21,41 @@ public class ProfileApiDelegateImpl implements ProfileApiDelegate {
   @Override
   public ResponseEntity<Profile> getMyProfile() {
     final UserAccount user = userService.currentUser();
-    return ResponseEntity.ok(new Profile()
+    return ResponseEntity.ok(toDto(user));
+  }
+
+  private Profile toDto(UserAccount user) {
+    return new Profile()
         .isAdmin(userService.isUserAdmin(user))
         .username(user.getUsername())
-        .data(new ProfileData(user.getProfile().getDisplayName(), user.getMailAddr())));
+        .data(new ProfileData(user.getProfile().getDisplayName(), user.getMailAddr()));
   }
 
   @Override
   public ResponseEntity<Void> changeMyPassword(PasswordChangeRequest passwordChangeRequest) {
-    return ProfileApiDelegate.super.changeMyPassword(passwordChangeRequest);
+    userService.updatePassword(userService.currentUser(), passwordChangeRequest.getNewPassword());
+    return ResponseEntity.ok().build();
   }
 
   @Override
   public ResponseEntity<Void> deleteMyProfile() {
-    return ProfileApiDelegate.super.deleteMyProfile();
+    userService.deleteUser(userService.currentUser());
+    return ResponseEntity.ok().build();
   }
 
   @Override
   public ResponseEntity<Profile> updateMyProfile(ProfileData profileData) {
-    return ProfileApiDelegate.super.updateMyProfile(profileData);
+    final var res = userService.updateUserData(
+        userService.currentUser(),
+        profileData.getName(),
+        profileData.getEmail());
+    return ResponseEntity.ok(toDto(res));
   }
 
   @Override
   public ResponseEntity<PfpUpdateResponse> updateProfilePic(MultipartFile file) {
-    return ProfileApiDelegate.super.updateProfilePic(file);
+    final var res = userService.updatePfp(userService.currentUser(), file);
+    return ResponseEntity.ok(new PfpUpdateResponse().url(res));
   }
 
 }

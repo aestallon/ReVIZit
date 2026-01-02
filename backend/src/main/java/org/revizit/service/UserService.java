@@ -1,5 +1,7 @@
 package org.revizit.service;
 
+import java.util.List;
+import java.util.Objects;
 import org.jspecify.annotations.NonNull;
 import org.revizit.persistence.entity.UserAccount;
 import org.revizit.persistence.repository.UserAccountRepository;
@@ -8,7 +10,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,6 +24,8 @@ public class UserService implements UserDetailsService {
   public static final String ROLE_ADMIN = "ADMIN";
 
   private final UserAccountRepository userAccountRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final ImageStorageService imageStorageService;
 
   public UserAccount currentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -47,6 +54,79 @@ public class UserService implements UserDetailsService {
     return userAccountRepository
         .findByUsername(username)
         .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+  }
+
+  private boolean isCurrentUserAdminOrMatches(UserAccount user) {
+    if (isCurrentUserAdmin()) {
+      return true;
+    }
+
+    final var currentUser = currentUser();
+    return currentUser != null && currentUser.getUsername().equals(user.getUsername());
+  }
+
+  @Transactional
+  public UserAccount updatePassword(UserAccount userAccount, final String newPassword) {
+    if (!isCurrentUserAdminOrMatches(userAccount)) {
+      throw new NotAuthorisedException();
+    }
+
+    userAccount.setUserPw(passwordEncoder.encode(newPassword));
+    return userAccountRepository.save(userAccount);
+  }
+
+  @Transactional
+  public void deleteUser(UserAccount userAccount) {
+    if (!isCurrentUserAdminOrMatches(userAccount)) {
+      throw new NotAuthorisedException();
+    }
+
+    userAccount.setProfile(null);
+    userAccount.setInactive(true);
+    userAccountRepository.save(userAccount);
+  }
+
+  @Transactional
+  public UserAccount updateUserData(UserAccount userAccount, String displayName,
+                                    String mailAddress) {
+    if (!isCurrentUserAdminOrMatches(userAccount)) {
+      throw new NotAuthorisedException();
+    }
+
+    final var oldDisplayName = userAccount.getProfile().getDisplayName();
+    final var oldMailAddress = userAccount.getMailAddr();
+    boolean changed = false;
+    if (!Objects.equals(oldDisplayName, displayName)) {
+      userAccount.getProfile().setDisplayName(displayName);
+      changed = true;
+    }
+    if (!Objects.equals(oldMailAddress, mailAddress)) {
+      userAccount.setMailAddr(mailAddress);
+      changed = true;
+    }
+
+    if (changed) {
+      return userAccountRepository.save(userAccount);
+    } else {
+      return userAccount;
+    }
+  }
+
+  @Transactional
+  public String updatePfp(UserAccount user, MultipartFile file) {
+    if (!isCurrentUserAdminOrMatches(user)) {
+      throw new NotAuthorisedException();
+    }
+
+    final String pfpPath = imageStorageService.storeImage(file);
+    user.getProfile().setProfilePictureUrl(pfpPath);
+    userAccountRepository.save(user);
+    return pfpPath;
+  }
+
+  @Transactional(readOnly = true)
+  public List<UserAccount> activeUsers() {
+    return userAccountRepository.findByInactive(false);
   }
 
 }

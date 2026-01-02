@@ -18,7 +18,7 @@ import org.revizit.persistence.repository.WaterStateRepository;
 import org.revizit.rest.model.WaterReportDto;
 import org.revizit.rest.model.WaterStateDto;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -68,6 +68,7 @@ public class WaterService {
     return waterStateRepository.save(state);
   }
 
+  @Transactional
   public WaterReport registerReport(WaterReportDto dto) {
     Objects.requireNonNull(dto, "Water Report DTO cannot be null!");
 
@@ -179,6 +180,7 @@ public class WaterService {
   }
 
 
+  @Transactional(readOnly = true)
   public List<WaterFlavour> getAvailableFlavours() {
     return waterFlavourRepository.findByInactive(false);
   }
