@@ -24,7 +24,7 @@ public class ImageStorageService {
   private final Path rootLocation;
 
   @Autowired
-  public ImageStorageService(@Value("${revizit.image-storage-root:./media}") String rootDir) {
+  public ImageStorageService(@Value("${revizit.media-storage-root:./media}") String rootDir) {
     this.rootLocation = Paths.get(rootDir + PREFIX_IMAGE_STORAGE);
     try {
       Files.createDirectories(rootLocation);
