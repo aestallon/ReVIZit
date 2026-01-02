@@ -25,6 +25,11 @@ export const routes: Routes = [
     loadComponent: () => import('./view/reports').then(m => m.Reports),
     canActivate: [AUTH_GUARD]
   },
+  {
+    path: 'profile',
+    loadComponent: () => import('./view/profile').then(m => m.Profile),
+    canActivate: [AUTH_GUARD]
+  },
 
   {path: '**', redirectTo: '/home'}
 

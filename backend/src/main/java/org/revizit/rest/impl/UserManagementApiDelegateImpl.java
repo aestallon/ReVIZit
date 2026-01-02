@@ -47,6 +47,7 @@ public class UserManagementApiDelegateImpl implements UserManagementApiDelegate 
     return new Profile()
         .isAdmin(userService.isUserAdmin(user))
         .username(user.getUsername())
+        .pfp(user.getProfile().getProfilePictureUrl())
         .data(new ProfileData(user.getProfile().getDisplayName(), user.getMailAddr()));
   }
 

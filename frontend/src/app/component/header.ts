@@ -1,13 +1,16 @@
-import { Component, inject } from '@angular/core';
+import {Component, computed, inject} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
-import { Button } from 'primeng/button';
-import { UserService } from '../service/user.service';
-import { PrimeIcons } from 'primeng/api';
+import {Button} from 'primeng/button';
+import {UserService} from '../service/user.service';
+import {MenuItem, PrimeIcons} from 'primeng/api';
+import {RevizitService} from '../service/revizit.service';
+import {Menu} from 'primeng/menu';
+import {UserBtn} from './user.btn';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [Button, RouterLink, RouterLinkActive],
+  imports: [Button, RouterLink, RouterLinkActive, Menu, UserBtn],
   template: `
     <header class="header-container">
       <div class="header-left">
@@ -18,7 +21,8 @@ import { PrimeIcons } from 'primeng/api';
           <div class="vertical-divider"></div>
           <div class="user-greeting">
             <i [class]="PrimeIcons.USER" class="user-icon"></i>
-            <span>Hello, <span class="user-name">{{ userService.profile()?.data?.name ?? 'there' }}</span>!</span>
+            <span>Hello, <span
+              class="user-name">{{ userService.profile()?.data?.name ?? 'there' }}</span>!</span>
           </div>
         }
       </div>
@@ -28,47 +32,33 @@ import { PrimeIcons } from 'primeng/api';
 
       <div class="header-right">
         <div class="nav-actions">
-          @if (userService.profile()?.isAdmin) {
-            <p-button [icon]="PrimeIcons.COG"
-                      routerLink="/settings"
-                      routerLinkActive="active-route"
-                      label="Settings"
-                      variant="text"
-                      size="small"></p-button>
-          }
           @if (userService.isAuthenticated()) {
             <p-button [icon]="PrimeIcons.CHART_BAR"
                       routerLink="/stats"
                       routerLinkActive="active-route"
                       label="Statistics"
-                      variant="text"
-                      size="small"></p-button>
+                      variant="text"></p-button>
             <p-button [icon]="PrimeIcons.LIST_CHECK"
                       routerLink="/reports"
                       routerLinkActive="active-route"
                       label="Pending Reports"
                       variant="text"
-                      size="small"></p-button>
+                      [badge]="pendingCount()"></p-button>
           }
           <p-button routerLink="/home"
                     routerLinkActive="active-route"
                     [icon]="PrimeIcons.HOME"
                     label="Home"
-                    variant="text"
-                    size="small"></p-button>
+                    variant="text"></p-button>
 
           <div class="auth-section">
             @if (userService.isAuthenticated()) {
-              <p-button label="Log Out"
-                        [icon]="PrimeIcons.SIGN_OUT"
-                        severity="secondary"
-                        size="small"
-                        (onClick)="onLogoutClicked()"></p-button>
+              <p-menu #menu [model]="userActions()" [popup]="true"></p-menu>
+              <app-user-btn [profile]="userService.profile()?? undefined" (onClick)="menu.toggle($event)"></app-user-btn>
             } @else {
               <p-button label="Log In"
                         [icon]="PrimeIcons.SIGN_IN"
                         severity="primary"
-                        size="small"
                         routerLink="/login"></p-button>
             }
           </div>
@@ -88,7 +78,7 @@ import { PrimeIcons } from 'primeng/api';
       padding: 0.75rem 2rem;
       background: var(--p-content-background);
       border-bottom: 1px solid var(--p-content-border-color);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       position: sticky;
       top: 0;
       z-index: 1000;
@@ -196,7 +186,34 @@ import { PrimeIcons } from 'primeng/api';
 })
 export class Header {
   protected readonly userService = inject(UserService);
+  protected readonly revizitService = inject(RevizitService);
   protected readonly PrimeIcons = PrimeIcons;
+
+  pendingCount = computed(() => {
+    const cnt = this.revizitService.pendingReports().length;
+    return cnt > 0 ? `${cnt}` : '';
+  });
+
+  userActions = computed<Array<MenuItem>>(() => {
+    const profile = this.userService.profile();
+    if (!profile) {
+      return [];
+    }
+
+    const admin = profile.isAdmin;
+    return admin
+      ? [
+        {label: 'Profile', icon: PrimeIcons.USER_EDIT, routerLink: '/profile'},
+        {label: 'Settings', icon: PrimeIcons.COG, routerLink: '/settings'},
+        {separator: true},
+        {label: 'Log Out', icon: PrimeIcons.SIGN_OUT, command: () => this.onLogoutClicked(),},
+      ]
+      : [
+        {label: 'Profile', icon: PrimeIcons.USER_EDIT, routerLink: '/profile'},
+        {separator: true},
+        {label: 'Log Out', icon: PrimeIcons.SIGN_OUT, command: () => this.onLogoutClicked()},
+      ]
+  });
 
   onLogoutClicked() {
     this.userService.logOut();

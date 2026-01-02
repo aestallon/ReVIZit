@@ -15,19 +15,7 @@ export class UserService {
   private readonly user = signal<Profile | null>(null);
   private readonly userEffect = effect(async () => {
     console.log('User effect triggered');
-    if (this.isAuthenticated()) {
-
-      let profile: Profile | null = null;
-      try {
-        profile = await lastValueFrom(this.profileApi.getMyProfile());
-      } catch (e) {
-        console.error('Error on fetching profile: ', e);
-      }
-      this.user.set(profile);
-      console.log('User profile: ', this.user());
-    } else {
-      this.clearToken();
-    }
+    await this.refreshProfile();
   });
 
   public readonly isAuthenticated = computed(() => !!this.token());
@@ -57,6 +45,22 @@ export class UserService {
     await this.router.navigateByUrl('');
   }
 
+  async refreshProfile() {
+    if (this.isAuthenticated()) {
+
+      let profile: Profile | null = null;
+      try {
+        profile = await lastValueFrom(this.profileApi.getMyProfile());
+      } catch (e) {
+        console.error('Error on fetching profile: ', e);
+      }
+      this.user.set(profile);
+      console.log('User profile: ', this.user());
+    } else {
+      this.clearToken();
+    }
+  }
+
   public async logIn(username: string, password: string): Promise<boolean> {
     try {
       const {token} = await lastValueFrom(this.authApi.login({username, password}));
@@ -71,6 +75,29 @@ export class UserService {
       return false;
     }
 
+  }
+
+  async updateBasicData(name: string, email: string) {
+    const res = await lastValueFrom(this.profileApi.updateMyProfile({name, email}));
+    this.user.set(res);
+  }
+
+  async updatePfp(blob: Blob) {
+    const res = await lastValueFrom(this.profileApi.updateProfilePic(blob));
+    this.user.update(it => {
+      if (!it) return it;
+      return {
+        ...it,
+        pfp: res.url
+      }
+    });
+  }
+
+  async changePassword(from: string, to: string) {
+    await lastValueFrom(this.profileApi.changeMyPassword({
+      oldPassword: from,
+      newPassword: to,
+    }));
   }
 
 }

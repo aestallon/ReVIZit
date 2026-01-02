@@ -39,3 +39,6 @@ out/
 .vscode/
 /frontend/node/
 /frontend/.frontend-gradle-plugin
+
+## Artefacts ##
+/media/
