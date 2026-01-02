@@ -5,7 +5,7 @@ import {InputText} from 'primeng/inputtext';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {UserService} from '../../service/user.service';
 import {MessageService, PrimeIcons} from 'primeng/api';
-import {asCustomErrorMsg} from '../../service/errors';
+import {asErrorMsg} from '../../service/errors';
 
 @Component({
   selector: 'app-profile-basic-data-form',
@@ -63,6 +63,6 @@ export class ProfileBasicDataForm {
         detail: 'Profile updated successfully',
         life: 3000
       }))
-      .catch(err => this.messageService.add(asCustomErrorMsg(err, 'Failed to update profile data')));
+      .catch(err => this.messageService.add(asErrorMsg(err, 'Failed to update profile data')));
   }
 }

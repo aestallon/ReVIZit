@@ -9,7 +9,7 @@ import {Popover} from 'primeng/popover';
 import {FloatLabel} from 'primeng/floatlabel';
 import {InputText} from 'primeng/inputtext';
 import {FormsModule} from '@angular/forms';
-import {asCustomErrorMsg} from '../../service/errors';
+import {asErrorMsg} from '../../service/errors';
 
 @Component({
   selector: 'app-water-flavour-def',
@@ -189,7 +189,7 @@ export class WaterFlavourDef {
       .catch((err) => {
         this.loading.set(false);
         this.unavailable.set(true);
-        this.messageService.add(asCustomErrorMsg(err, 'Failed to load flavour data'));
+        this.messageService.add(asErrorMsg(err, 'Failed to load flavour data'));
       });
   }
 
@@ -219,7 +219,7 @@ export class WaterFlavourDef {
       })
       .catch(err => {
         this.loading.set(false);
-        this.messageService.add(asCustomErrorMsg(err, `Failed to ${arg} flavour`));
+        this.messageService.add(asErrorMsg(err, `Failed to ${arg} flavour`));
       });
   }
 
@@ -237,7 +237,7 @@ export class WaterFlavourDef {
       })
       .catch(err => {
         this.loading.set(false);
-        this.messageService.add(asCustomErrorMsg(err, 'Failed to enable flavour'));
+        this.messageService.add(asErrorMsg(err, 'Failed to enable flavour'));
       });
   }
 
@@ -275,7 +275,7 @@ export class WaterFlavourDef {
       })
         .catch(err => {
           this.loading.set(false);
-          this.messageService.add(asCustomErrorMsg(err, 'Failed to rename flavour'));
+          this.messageService.add(asErrorMsg(err, 'Failed to rename flavour'));
         });
     } else {
       this.service.createFlavour(newName).then(() => {
@@ -289,7 +289,7 @@ export class WaterFlavourDef {
       })
         .catch(err => {
           this.loading.set(false);
-          this.messageService.add(asCustomErrorMsg(err, 'Failed to create flavour'));
+          this.messageService.add(asErrorMsg(err, 'Failed to create flavour'));
         })
     }
   }

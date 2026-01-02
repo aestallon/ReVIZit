@@ -1,15 +1,6 @@
 import {ApiError} from '../../api/revizit';
 import {ToastMessageOptions} from 'primeng/api';
 
-/*
-export interface ApiError {
-    status: number;
-    timestamp: string;
-    message?: string;
-    description?: string;
-}
- */
-
 const ERROR_UNKNOWN: ApiError = {
   status: 500,
   timestamp: new Date().toISOString(),
@@ -33,17 +24,12 @@ export const toApiError: (error: any) => ApiError = (error: any) => {
   return toApiError(inner);
 };
 
-export const asErrorMsg = (error: any): ToastMessageOptions => {
+export const asErrorMsg = (error: any, summary?: string): ToastMessageOptions => {
   const apiError = toApiError(error);
   return {
     severity: 'error',
-    summary: 'Error',
+    summary: summary ?? 'Error',
     detail: apiError.message ?? apiError.description ?? 'Unknown error, please try later!',
     life: 3000,
   };
-}
-
-export const asCustomErrorMsg = (error: any, summary: string): ToastMessageOptions => {
-  const msg = asErrorMsg(error);
-  return {...msg, summary};
 }

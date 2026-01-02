@@ -8,7 +8,7 @@ import {FileSelectEvent, FileUpload} from 'primeng/fileupload';
 import {Avatar} from 'primeng/avatar';
 import {Image} from 'primeng/image';
 import {UserService} from '../../service/user.service';
-import {asCustomErrorMsg} from '../../service/errors';
+import {asErrorMsg} from '../../service/errors';
 
 @Component({
   selector: 'app-profile-basic-data-pic',
@@ -119,6 +119,6 @@ export class ProfileBasicDataPic {
         this.currentBlob = null;
         this.cropperVisible.set(false);
       })
-      .catch(err => this.messageService.add(asCustomErrorMsg(err, 'Failed to update profile picture!')));
+      .catch(err => this.messageService.add(asErrorMsg(err, 'Failed to update profile picture!')));
   }
 }

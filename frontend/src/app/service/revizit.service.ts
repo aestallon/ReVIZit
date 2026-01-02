@@ -8,7 +8,7 @@ import {
 } from '../../api/revizit';
 import {lastValueFrom, tap} from 'rxjs';
 import {MessageService} from 'primeng/api';
-import {asCustomErrorMsg} from './errors';
+import {asErrorMsg} from './errors';
 
 const STATE_UNKNOWN: WaterStateDto = {
   emptyGallons: 0,
@@ -49,7 +49,7 @@ export class RevizitService {
       this.waterState.set(state);
     } catch (err) {
       if (404 === (err as any)?.status) {
-        this.messageService.add(asCustomErrorMsg(err, 'No water state available!'));
+        this.messageService.add(asErrorMsg(err, 'No water state available!'));
         this.waterState.set(STATE_UNKNOWN);
       } else {
         throw err;

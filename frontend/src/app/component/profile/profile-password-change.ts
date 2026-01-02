@@ -4,7 +4,7 @@ import {Password} from 'primeng/password';
 import {FormsModule} from '@angular/forms';
 import {UserService} from '../../service/user.service';
 import {MessageService, PrimeIcons} from 'primeng/api';
-import {asCustomErrorMsg} from '../../service/errors';
+import {asErrorMsg} from '../../service/errors';
 import {FloatLabel} from 'primeng/floatlabel';
 
 @Component({
@@ -84,7 +84,7 @@ export class ProfilePasswordChange {
         summary: 'Success',
         detail: 'Password changed'
       }))
-      .catch(err => this.messageService.add(asCustomErrorMsg(err, 'Failed to change password')));
+      .catch(err => this.messageService.add(asErrorMsg(err, 'Failed to change password')));
   }
 
   protected readonly PrimeIcons = PrimeIcons;
