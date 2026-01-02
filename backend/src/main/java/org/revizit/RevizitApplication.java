@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import org.revizit.persistence.entity.UserAccount;
+import org.revizit.persistence.entity.UserProfile;
 import org.revizit.persistence.entity.WaterFlavour;
 import org.revizit.persistence.entity.WaterState;
 import org.revizit.persistence.repository.UserAccountRepository;
@@ -53,6 +54,10 @@ public class RevizitApplication {
               user.setMailAddr("foo@bar.com");
               user.setUserRole("ADMIN");
               user.setInactive(false);
+
+              final var profile = new UserProfile();
+              profile.setDisplayName("Foo");
+              user.setProfile(profile);
               userAccountRepository.save(user);
               log.info("User {} is created", user.getUsername());
             });

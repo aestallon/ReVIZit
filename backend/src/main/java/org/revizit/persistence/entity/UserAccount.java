@@ -34,8 +34,9 @@ public class UserAccount implements UserDetails {
     @Column(nullable = false)
     private boolean inactive;
 
-    @Column(name = "profile_id")
-    private Integer profileId;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_profile")
+    private UserProfile profile;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

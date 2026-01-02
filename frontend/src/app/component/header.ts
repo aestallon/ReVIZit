@@ -18,7 +18,7 @@ import { PrimeIcons } from 'primeng/api';
           <div class="vertical-divider"></div>
           <div class="user-greeting">
             <i [class]="PrimeIcons.USER" class="user-icon"></i>
-            <span>Hello, <span class="user-name">{{ userService.profile()?.name ?? 'there' }}</span>!</span>
+            <span>Hello, <span class="user-name">{{ userService.profile()?.data?.name ?? 'there' }}</span>!</span>
           </div>
         }
       </div>

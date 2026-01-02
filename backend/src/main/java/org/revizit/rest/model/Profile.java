@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import org.revizit.rest.model.ProfileData;
 import org.springframework.lang.Nullable;
 import java.time.OffsetDateTime;
 import jakarta.validation.Valid;
@@ -23,9 +24,11 @@ public class Profile {
 
   private String username;
 
-  private String name;
+  private ProfileData data;
 
   private Boolean isAdmin = false;
+
+  private @Nullable String pfp;
 
   public Profile() {
     super();
@@ -34,9 +37,9 @@ public class Profile {
   /**
    * Constructor with only required parameters
    */
-  public Profile(String username, String name, Boolean isAdmin) {
+  public Profile(String username, ProfileData data, Boolean isAdmin) {
     this.username = username;
-    this.name = name;
+    this.data = data;
     this.isAdmin = isAdmin;
   }
 
@@ -60,24 +63,24 @@ public class Profile {
     this.username = username;
   }
 
-  public Profile name(String name) {
-    this.name = name;
+  public Profile data(ProfileData data) {
+    this.data = data;
     return this;
   }
 
   /**
-   * Get name
-   * @return name
+   * Get data
+   * @return data
    */
-  @NotNull 
-  @Schema(name = "name", requiredMode = Schema.RequiredMode.REQUIRED)
-  @JsonProperty("name")
-  public String getName() {
-    return name;
+  @NotNull @Valid 
+  @Schema(name = "data", requiredMode = Schema.RequiredMode.REQUIRED)
+  @JsonProperty("data")
+  public ProfileData getData() {
+    return data;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setData(ProfileData data) {
+    this.data = data;
   }
 
   public Profile isAdmin(Boolean isAdmin) {
@@ -100,6 +103,26 @@ public class Profile {
     this.isAdmin = isAdmin;
   }
 
+  public Profile pfp(@Nullable String pfp) {
+    this.pfp = pfp;
+    return this;
+  }
+
+  /**
+   * Get pfp
+   * @return pfp
+   */
+  
+  @Schema(name = "pfp", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("pfp")
+  public @Nullable String getPfp() {
+    return pfp;
+  }
+
+  public void setPfp(@Nullable String pfp) {
+    this.pfp = pfp;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -110,13 +133,14 @@ public class Profile {
     }
     Profile profile = (Profile) o;
     return Objects.equals(this.username, profile.username) &&
-        Objects.equals(this.name, profile.name) &&
-        Objects.equals(this.isAdmin, profile.isAdmin);
+        Objects.equals(this.data, profile.data) &&
+        Objects.equals(this.isAdmin, profile.isAdmin) &&
+        Objects.equals(this.pfp, profile.pfp);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(username, name, isAdmin);
+    return Objects.hash(username, data, isAdmin, pfp);
   }
 
   @Override
@@ -124,8 +148,9 @@ public class Profile {
     StringBuilder sb = new StringBuilder();
     sb.append("class Profile {\n");
     sb.append("    username: ").append(toIndentedString(username)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    data: ").append(toIndentedString(data)).append("\n");
     sb.append("    isAdmin: ").append(toIndentedString(isAdmin)).append("\n");
+    sb.append("    pfp: ").append(toIndentedString(pfp)).append("\n");
     sb.append("}");
     return sb.toString();
   }

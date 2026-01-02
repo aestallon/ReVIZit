@@ -9,6 +9,8 @@ tags:
     description: User profile related stuff
   - name: Water
     description: Water related stuff
+  - name: UserManagement
+    description: User management related stuff
 paths:
 
   # Auth
@@ -48,6 +50,8 @@ paths:
         '403':
           description: Unauthorized
 
+  # --------------------------------------------------------------------------------
+  # Profile
   /profile/my:
     get:
       tags:
@@ -73,7 +77,220 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+    put:
+      summary: Updates user profile
+      description: Updates user profile.
+      operationId: updateMyProfile
+      tags:
+        - Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileData'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Error updating profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      summary: Deletes user profile
+      description: Deletes user profile.
+      operationId: deleteMyProfile
+      tags:
+        - Profile
+      responses:
+        '200':
+          description: Ok
+  /profile/my/pw:
+    put:
+      summary: Changes user password
+      description: Changes user password.
+      operationId: changeMyPassword
+      tags:
+        - Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /profile/my/picture:
+    put:
+      tags:
+        - Profile
+      summary: Upload profile picture
+      operationId: updateProfilePic
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PNG or JPG image file
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PfpUpdateResponse'
 
+        '400':
+          description: Invalid file format or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  # --------------------------------------------------------------------------------
+  # UserManagement
+  /umgmt:
+    get:
+      summary: Returns all users of the application.
+      description: Returns all users of the application.
+      operationId: getAllUsers
+      tags:
+        - UserManagement
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Profile'
+    post:
+      summary: Creates users by standard file upload
+      description: Creates users by standard file upload.
+      operationId: createUsers
+      tags:
+        - UserManagement
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    put:
+      summary: Updates user profile
+      description: Updates user profile.
+      operationId: updateUser
+      tags:
+        - UserManagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      summary: Deletes a user
+      description: Deletes a user.
+      operationId: deleteUser
+      tags:
+        - UserManagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSelector'
+      responses:
+        '200':
+          description: Ok
+  /umgmt/reset:
+    post:
+      summary: Resets a user's password
+      description: Resets a user's password.
+      operationId: resetUserPassword
+      tags:
+        - UserManagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSelector'
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  # --------------------------------------------------------------------------------
+  # Water
   /water/current:
     get:
       summary: The current water state.
@@ -395,17 +612,50 @@ components:
       properties:
         token:
           type: string
+    ProfileData:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          default: ''
+          example: 'foo@bar.com'
+      required: [ name, email ]
     Profile:
       type: object
       properties:
         username:
           type: string
-        name:
-          type: string
+        data:
+          $ref: '#/components/schemas/ProfileData'
         isAdmin:
           type: boolean
           default: false
-      required: [ username, name, isAdmin ]
+        pfp:
+          type: string
+      required: [ username, data, isAdmin ]
+    PasswordChangeRequest:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+      required: [ oldPassword, newPassword ]
+    PfpUpdateResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL of the uploaded profile picture
+
+    UserSelector:
+      type: object
+      properties:
+        username:
+          type: string
+      required: [ username ]
 
     ApiError:
       type: object

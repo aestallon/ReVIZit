@@ -1,7 +1,11 @@
 package org.revizit.rest.api;
 
 import org.revizit.rest.model.ApiError;
+import org.springframework.lang.Nullable;
+import org.revizit.rest.model.PasswordChangeRequest;
+import org.revizit.rest.model.PfpUpdateResponse;
 import org.revizit.rest.model.Profile;
+import org.revizit.rest.model.ProfileData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +31,41 @@ public interface ProfileApiDelegate {
     }
 
     /**
+     * PUT /profile/my/pw : Changes user password
+     * Changes user password.
+     *
+     * @param passwordChangeRequest  (required)
+     * @return Ok (status code 200)
+     *         or Bad request (status code 400)
+     * @see ProfileApi#changeMyPassword
+     */
+    default ResponseEntity<Void> changeMyPassword(PasswordChangeRequest passwordChangeRequest) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"description\" : \"description\", \"message\" : \"message\", \"status\" : 0, \"timestamp\" : \"2000-01-23T04:56:07.000+00:00\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
+     * DELETE /profile/my : Deletes user profile
+     * Deletes user profile.
+     *
+     * @return Ok (status code 200)
+     * @see ProfileApi#deleteMyProfile
+     */
+    default ResponseEntity<Void> deleteMyProfile() {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
      * GET /profile/my : Get user profile
      *
      * @return Successful operation (status code 200)
@@ -38,7 +77,80 @@ public interface ProfileApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"name\" : \"name\", \"isAdmin\" : false, \"username\" : \"username\" }";
+                    String exampleString = "{ \"data\" : { \"name\" : \"name\", \"email\" : \"foo@bar.com\" }, \"isAdmin\" : false, \"pfp\" : \"pfp\", \"username\" : \"username\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"description\" : \"description\", \"message\" : \"message\", \"status\" : 0, \"timestamp\" : \"2000-01-23T04:56:07.000+00:00\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"description\" : \"description\", \"message\" : \"message\", \"status\" : 0, \"timestamp\" : \"2000-01-23T04:56:07.000+00:00\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
+     * PUT /profile/my : Updates user profile
+     * Updates user profile.
+     *
+     * @param profileData  (required)
+     * @return Ok (status code 200)
+     *         or Error updating profile (status code 400)
+     * @see ProfileApi#updateMyProfile
+     */
+    default ResponseEntity<Profile> updateMyProfile(ProfileData profileData) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"data\" : { \"name\" : \"name\", \"email\" : \"foo@bar.com\" }, \"isAdmin\" : false, \"pfp\" : \"pfp\", \"username\" : \"username\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"description\" : \"description\", \"message\" : \"message\", \"status\" : 0, \"timestamp\" : \"2000-01-23T04:56:07.000+00:00\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
+     * PUT /profile/my/picture : Upload profile picture
+     *
+     * @param file PNG or JPG image file (optional)
+     * @return Profile picture uploaded successfully (status code 200)
+     *         or Invalid file format or size (status code 400)
+     *         or Unauthorized (status code 401)
+     *         or File too large (status code 413)
+     *         or Internal server error (status code 500)
+     * @see ProfileApi#updateProfilePic
+     */
+    default ResponseEntity<PfpUpdateResponse> updateProfilePic(MultipartFile file) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"url\" : \"url\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"description\" : \"description\", \"message\" : \"message\", \"status\" : 0, \"timestamp\" : \"2000-01-23T04:56:07.000+00:00\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"description\" : \"description\", \"message\" : \"message\", \"status\" : 0, \"timestamp\" : \"2000-01-23T04:56:07.000+00:00\" }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }

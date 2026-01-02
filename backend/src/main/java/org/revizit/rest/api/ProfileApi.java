@@ -6,7 +6,11 @@
 package org.revizit.rest.api;
 
 import org.revizit.rest.model.ApiError;
+import org.springframework.lang.Nullable;
+import org.revizit.rest.model.PasswordChangeRequest;
+import org.revizit.rest.model.PfpUpdateResponse;
 import org.revizit.rest.model.Profile;
+import org.revizit.rest.model.ProfileData;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +42,67 @@ public interface ProfileApi {
     default ProfileApiDelegate getDelegate() {
         return new ProfileApiDelegate() {};
     }
+
+    String PATH_CHANGE_MY_PASSWORD = "/profile/my/pw";
+    /**
+     * PUT /profile/my/pw : Changes user password
+     * Changes user password.
+     *
+     * @param passwordChangeRequest  (required)
+     * @return Ok (status code 200)
+     *         or Bad request (status code 400)
+     */
+    @Operation(
+        operationId = "changeMyPassword",
+        summary = "Changes user password",
+        description = "Changes user password.",
+        tags = { "Profile" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok"),
+            @ApiResponse(responseCode = "400", description = "Bad request", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.PUT,
+        value = ProfileApi.PATH_CHANGE_MY_PASSWORD,
+        produces = { "application/json" },
+        consumes = { "application/json" }
+    )
+    default ResponseEntity<Void> changeMyPassword(
+        @Parameter(name = "PasswordChangeRequest", description = "", required = true) @Valid @RequestBody PasswordChangeRequest passwordChangeRequest
+    ) {
+        return getDelegate().changeMyPassword(passwordChangeRequest);
+    }
+
+
+    String PATH_DELETE_MY_PROFILE = "/profile/my";
+    /**
+     * DELETE /profile/my : Deletes user profile
+     * Deletes user profile.
+     *
+     * @return Ok (status code 200)
+     */
+    @Operation(
+        operationId = "deleteMyProfile",
+        summary = "Deletes user profile",
+        description = "Deletes user profile.",
+        tags = { "Profile" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok")
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.DELETE,
+        value = ProfileApi.PATH_DELETE_MY_PROFILE
+    )
+    default ResponseEntity<Void> deleteMyProfile(
+        
+    ) {
+        return getDelegate().deleteMyProfile();
+    }
+
 
     String PATH_GET_MY_PROFILE = "/profile/my";
     /**
@@ -72,6 +137,88 @@ public interface ProfileApi {
         
     ) {
         return getDelegate().getMyProfile();
+    }
+
+
+    String PATH_UPDATE_MY_PROFILE = "/profile/my";
+    /**
+     * PUT /profile/my : Updates user profile
+     * Updates user profile.
+     *
+     * @param profileData  (required)
+     * @return Ok (status code 200)
+     *         or Error updating profile (status code 400)
+     */
+    @Operation(
+        operationId = "updateMyProfile",
+        summary = "Updates user profile",
+        description = "Updates user profile.",
+        tags = { "Profile" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = Profile.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Error updating profile", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.PUT,
+        value = ProfileApi.PATH_UPDATE_MY_PROFILE,
+        produces = { "application/json" },
+        consumes = { "application/json" }
+    )
+    default ResponseEntity<Profile> updateMyProfile(
+        @Parameter(name = "ProfileData", description = "", required = true) @Valid @RequestBody ProfileData profileData
+    ) {
+        return getDelegate().updateMyProfile(profileData);
+    }
+
+
+    String PATH_UPDATE_PROFILE_PIC = "/profile/my/picture";
+    /**
+     * PUT /profile/my/picture : Upload profile picture
+     *
+     * @param file PNG or JPG image file (optional)
+     * @return Profile picture uploaded successfully (status code 200)
+     *         or Invalid file format or size (status code 400)
+     *         or Unauthorized (status code 401)
+     *         or File too large (status code 413)
+     *         or Internal server error (status code 500)
+     */
+    @Operation(
+        operationId = "updateProfilePic",
+        summary = "Upload profile picture",
+        tags = { "Profile" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Profile picture uploaded successfully", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = PfpUpdateResponse.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Invalid file format or size", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            }),
+            @ApiResponse(responseCode = "413", description = "File too large", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            }),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.PUT,
+        value = ProfileApi.PATH_UPDATE_PROFILE_PIC,
+        produces = { "application/json" },
+        consumes = { "multipart/form-data" }
+    )
+    default ResponseEntity<PfpUpdateResponse> updateProfilePic(
+        @Parameter(name = "file", description = "PNG or JPG image file") @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        return getDelegate().updateProfilePic(file);
     }
 
 }

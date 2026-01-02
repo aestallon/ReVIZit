@@ -7,13 +7,9 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ProfileData } from './profileData';
 
 
-export interface Profile { 
+export interface UserSelector { 
     username: string;
-    data: ProfileData;
-    isAdmin: boolean;
-    pfp?: string;
 }
 

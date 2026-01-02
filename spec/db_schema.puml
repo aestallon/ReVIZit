@@ -7,6 +7,7 @@ entity flavour_request {
   name: text
   submitted_at: timestamp
   submitted_by: integer
+  ---
   id: integer
 }
 entity user_account {
@@ -17,12 +18,20 @@ entity user_account {
   inactive: boolean
   reg_token: uuid
   token_exp: timestamp
-  profile_id: integer
+  ---
+  id: integer
+}
+entity user_profile {
+  display_name: varchar(255)
+  user_account: integer
+  pfp: text
+  ---
   id: integer
 }
 entity water_flavour {
   name: text
   inactive: boolean
+  ---
   id: integer
 }
 entity water_report {
@@ -35,6 +44,7 @@ entity water_report {
   flavour: integer
   rejected_at: timestamp
   rejected_by: integer
+  ---
   id: integer
 }
 entity water_state {
@@ -43,13 +53,15 @@ entity water_state {
   curr_pct: integer
   created_at: timestamp
   report: integer
+  ---
   id: integer
 }
 
 enum report_type {
-    BALLOON_CHANGE
-    SET_PERCENTAGE
-    BALLOON_REFILL
+  ---
+  BALLOON_CHANGE
+  SET_PERCENTAGE
+  BALLOON_REFILL
 }
 
 flavour_request  -[plain]-^  user_account          : "submitted_by:id"
@@ -58,5 +70,6 @@ water_report     -[plain]-^  user_account          : "rejected_by:id"
 water_report     -[plain]-^  user_account          : "reported_by:id"
 water_report     -[plain]-^  water_flavour         : "flavour:id"
 water_state      -[plain]-^  water_report          : "report:id"
-report_type     ^-[dashed]- water_report::kind     : "type def"
+report_type     ^-[dashed]-  water_report::kind    : "type def"
+user_profile     -[plain]^  user_account          : "user_account:id"
 @enduml
