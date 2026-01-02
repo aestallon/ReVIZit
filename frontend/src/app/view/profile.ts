@@ -46,7 +46,7 @@ import {ProfilePasswordChange} from '../component/profile/profile-password-chang
     }
 
     :host ::ng-deep .p-panel {
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
     }
   `,
   imports: [

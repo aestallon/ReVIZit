@@ -1,4 +1,4 @@
-import {inject, Injectable, signal} from '@angular/core';
+import {effect, inject, Injectable, signal} from '@angular/core';
 import {
   WaterFlavourDto,
   WaterReportDetail,
@@ -9,6 +9,7 @@ import {
 import {lastValueFrom, tap} from 'rxjs';
 import {MessageService} from 'primeng/api';
 import {asErrorMsg} from './errors';
+import {UserService} from './user.service';
 
 const STATE_UNKNOWN: WaterStateDto = {
   emptyGallons: 0,
@@ -37,8 +38,14 @@ export class RevizitService {
   readonly allWaterFlavours = signal<Array<WaterFlavourDto>>([]);
   readonly usedWaterFlavours = signal<Set<number>>(new Set());
 
+  userService = inject(UserService);
   waterApi = inject(WaterService);
   messageService = inject(MessageService);
+  userEffect = effect(async () => {
+    if (this.userService.profile()) {
+      await this.loadPendingReports();
+    }
+  })
 
   async loadWaterState() {
     await this.loadWaterFlavours();

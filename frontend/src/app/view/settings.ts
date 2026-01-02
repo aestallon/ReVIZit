@@ -5,6 +5,7 @@ import {RevizitService} from '../service/revizit.service';
 import {FormsModule} from '@angular/forms';
 import {WaterStateDef} from '../component/settings/water-state-def';
 import {WaterFlavourDef} from '../component/settings/water-flavour-def';
+import {UserDef} from '../component/settings/user-def';
 
 @Component({
   selector: 'app-settings',
@@ -18,7 +19,7 @@ import {WaterFlavourDef} from '../component/settings/water-flavour-def';
           <app-water-flavour-def></app-water-flavour-def>
         </p-panel>
         <p-panel header="Users">
-
+          <app-user-def></app-user-def>
         </p-panel>
       </div>
     </p-card>
@@ -28,13 +29,17 @@ import {WaterFlavourDef} from '../component/settings/water-flavour-def';
     Panel,
     FormsModule,
     WaterStateDef,
-    WaterFlavourDef
+    WaterFlavourDef,
+    UserDef
   ],
   styles: `
     .settings-card {
       /*width: 700px;*/
     }
 
+    :host ::ng-deep .p-panel {
+      margin-bottom: 0.5rem;
+    }
   `
 })
 export class Settings {
