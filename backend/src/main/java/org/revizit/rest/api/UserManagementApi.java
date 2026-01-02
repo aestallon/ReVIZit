@@ -104,6 +104,42 @@ public interface UserManagementApi {
     }
 
 
+    String PATH_FLIP_USER_ROLE = "/umgmt/role";
+    /**
+     * PUT /umgmt/role : Flips a user&#39;s role
+     * Flips a user&#39;s role.
+     *
+     * @param userSelector  (required)
+     * @return Ok (status code 200)
+     *         or Bad request (status code 400)
+     */
+    @Operation(
+        operationId = "flipUserRole",
+        summary = "Flips a user's role",
+        description = "Flips a user's role.",
+        tags = { "UserManagement" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = Profile.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad request", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ApiError.class))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.PUT,
+        value = UserManagementApi.PATH_FLIP_USER_ROLE,
+        produces = { "application/json" },
+        consumes = { "application/json" }
+    )
+    default ResponseEntity<Profile> flipUserRole(
+        @Parameter(name = "UserSelector", description = "", required = true) @Valid @RequestBody UserSelector userSelector
+    ) {
+        return getDelegate().flipUserRole(userSelector);
+    }
+
+
     String PATH_GET_ALL_USERS = "/umgmt";
     /**
      * GET /umgmt : Returns all users of the application.

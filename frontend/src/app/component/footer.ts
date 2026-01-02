@@ -76,7 +76,7 @@ import { PrimeIcons } from 'primeng/api';
       font-size: 1.25rem;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .footer-content {
         flex-direction: column;
         gap: 1rem;

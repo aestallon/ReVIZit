@@ -34,7 +34,10 @@ public class ProfileApiDelegateImpl implements ProfileApiDelegate {
 
   @Override
   public ResponseEntity<Void> changeMyPassword(PasswordChangeRequest passwordChangeRequest) {
-    userService.updatePassword(userService.currentUser(), passwordChangeRequest.getNewPassword());
+    userService.updatePassword(
+        userService.currentUser(),
+        passwordChangeRequest.getOldPassword(),
+        passwordChangeRequest.getNewPassword());
     return ResponseEntity.ok().build();
   }
 

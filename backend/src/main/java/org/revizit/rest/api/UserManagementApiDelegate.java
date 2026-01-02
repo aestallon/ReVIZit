@@ -65,6 +65,34 @@ public interface UserManagementApiDelegate {
     }
 
     /**
+     * PUT /umgmt/role : Flips a user&#39;s role
+     * Flips a user&#39;s role.
+     *
+     * @param userSelector  (required)
+     * @return Ok (status code 200)
+     *         or Bad request (status code 400)
+     * @see UserManagementApi#flipUserRole
+     */
+    default ResponseEntity<Profile> flipUserRole(UserSelector userSelector) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"data\" : { \"name\" : \"name\", \"email\" : \"foo@bar.com\" }, \"isAdmin\" : false, \"pfp\" : \"pfp\", \"username\" : \"username\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"description\" : \"description\", \"message\" : \"message\", \"status\" : 0, \"timestamp\" : \"2000-01-23T04:56:07.000+00:00\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
      * GET /umgmt : Returns all users of the application.
      * Returns all users of the application.
      *

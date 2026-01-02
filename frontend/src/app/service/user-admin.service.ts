@@ -32,4 +32,18 @@ export class UserAdminService {
     await this.fetchUsers();
   }
 
+  public async promoteOrDemoteUser(username: string) {
+    const user = await lastValueFrom(this.service.flipUserRole({username}));
+    this.users.update(us => {
+      const idx = us.findIndex(it => username === it.username);
+      if (idx < 0) {
+        return [...us, user];
+      } else {
+        const newUsers = [...us];
+        newUsers[idx] = user;
+        return newUsers;
+      }
+    })
+  }
+
 }

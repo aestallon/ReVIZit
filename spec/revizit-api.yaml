@@ -288,6 +288,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /umgmt/role:
+    put:
+      summary: Flips a user's role
+      description: Flips a user's role.
+      operationId: flipUserRole
+      tags:
+        - UserManagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSelector'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
   # --------------------------------------------------------------------------------
   # Water

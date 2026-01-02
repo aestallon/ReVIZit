@@ -13,6 +13,7 @@ import org.revizit.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 
@@ -58,7 +59,7 @@ public class UserManagementApiDelegateImpl implements UserManagementApiDelegate 
   @Override
   public ResponseEntity<Void> resetUserPassword(UserSelector userSelector) {
     final var user = (UserAccount) userService.loadUserByUsername(userSelector.getUsername());
-    userService.updatePassword(user, defaultPassword);
+    userService.forceSetPassword(user, defaultPassword);
     return ResponseEntity.ok().build();
   }
 
@@ -69,6 +70,15 @@ public class UserManagementApiDelegateImpl implements UserManagementApiDelegate 
         user,
         profile.getData().getName(),
         profile.getData().getEmail());
+    return ResponseEntity.ok(toDto(user));
+  }
+
+  @Override
+  @Transactional
+  public ResponseEntity<Profile> flipUserRole(UserSelector userSelector) {
+    var user = (UserAccount) userService.loadUserByUsername(userSelector.getUsername());
+    final var admin = userService.isUserAdmin(user);
+    user = userService.markAdmin(userSelector.getUsername(), !admin);
     return ResponseEntity.ok(toDto(user));
   }
 }

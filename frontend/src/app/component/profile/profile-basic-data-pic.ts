@@ -20,7 +20,7 @@ import {asErrorMsg} from '../../service/errors';
                [preview]="true"
                alt="profile picture"/>
     } @else {
-      <p-avatar [icon]="PrimeIcons.USER"></p-avatar>
+      <p-avatar [icon]="PrimeIcons.USER" size="xlarge" shape="circle"></p-avatar>
     }
     <p-fileupload [auto]="false"
                   mode="basic"

@@ -100,4 +100,9 @@ export class UserService {
     }));
   }
 
+  async deleteMe() {
+    await lastValueFrom(this.profileApi.deleteMyProfile());
+    await this.logOut();
+  }
+
 }

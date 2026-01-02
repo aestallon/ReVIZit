@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import static java.util.stream.Collectors.toSet;
 import org.jspecify.annotations.NonNull;
 import org.revizit.persistence.entity.UserAccount;
@@ -74,7 +75,24 @@ public class UserService implements UserDetailsService {
   }
 
   @Transactional
-  public UserAccount updatePassword(UserAccount userAccount, final String newPassword) {
+  public UserAccount updatePassword(final UserAccount userAccount,
+                                    final String oldPassword,
+                                    final String newPassword) {
+    if (!isCurrentUserAdminOrMatches(userAccount)) {
+      throw new NotAuthorisedException();
+    }
+
+    final var currPassword = userAccount.getUserPw();
+    if (!passwordEncoder.matches(oldPassword, currPassword)) {
+      throw new IllegalArgumentException("Old password does not match!");
+    }
+
+    userAccount.setUserPw(passwordEncoder.encode(newPassword));
+    return userAccountRepository.save(userAccount);
+  }
+
+  @Transactional
+  public UserAccount forceSetPassword(final UserAccount userAccount, final String newPassword) {
     if (!isCurrentUserAdminOrMatches(userAccount)) {
       throw new NotAuthorisedException();
     }
@@ -91,6 +109,9 @@ public class UserService implements UserDetailsService {
 
     userAccount.setProfile(null);
     userAccount.setInactive(true);
+    userAccount.setUsername("deleted-user-" + UUID.randomUUID());
+    userAccount.setUserRole(ROLE_PLAIN);
+    userAccount.setUserPw("not-set");
     userAccountRepository.save(userAccount);
   }
 
@@ -158,7 +179,7 @@ public class UserService implements UserDetailsService {
       return;
     }
 
-    final Set<String> existingUsernames = userAccountRepository.findByUsernameIn(usernames)
+    final Set<String> existingUsernames = userAccountRepository.findActiveByUsername(usernames)
         .stream().map(UserAccount::getUsername)
         .collect(toSet());
     if (existingUsernames.size() == usernames.size()) {
@@ -192,6 +213,22 @@ public class UserService implements UserDetailsService {
     }
 
     userAccountRepository.saveAll(users);
+  }
+
+  @Transactional
+  public UserAccount markAdmin(String username, boolean admin) {
+    if (!isCurrentUserAdmin()) {
+      throw new NotAuthorisedException();
+    }
+
+    final var roleToSet = admin ? ROLE_ADMIN : ROLE_PLAIN;
+    final var user = (UserAccount) loadUserByUsername(username);
+    if (roleToSet.equals(user.getUserRole())) {
+      return user;
+    }
+
+    user.setUserRole(roleToSet);
+    return userAccountRepository.save(user);
   }
 
 }

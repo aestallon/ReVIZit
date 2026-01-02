@@ -45,7 +45,9 @@ import {FormsModule} from '@angular/forms';
                       routerLinkActive="active-route"
                       label="Pending Reports"
                       variant="text"
-                      [badge]="pendingCount()"></p-button>
+                      [badge]="pendingCount()"
+                      badgeSeverity="danger">
+            </p-button>
           }
           <p-button routerLink="/home"
                     routerLinkActive="active-route"

@@ -54,14 +54,47 @@ import {FileSelectEvent, FileUpload} from 'primeng/fileupload';
           <td>{{ user.username }}</td>
           <td>{{ user.isAdmin ? 'Admin' : '' }}</td>
           <td>{{ user.data.email }}</td>
-          <td>
+          <td style="display: flex;">
             @if (user.isAdmin && !isMyUser(user)) {
-              <p-button label="Demote Admin"></p-button>
+              <p-button class="user-admin-action"
+                        label="Demote Admin"
+                        severity="warn"
+                        [loading]="loading()"
+                        [disabled]="unavailable()"
+                        [icon]="PrimeIcons.ARROW_CIRCLE_DOWN"
+                        (onClick)="onRoleChangeClicked(user)">
+              </p-button>
             } @else if (!isMyUser(user)) {
-              <p-button label="Promote Admin"></p-button>
+              <p-button class="user-admin-action"
+                        label="Promote Admin"
+                        severity="info"
+                        [loading]="loading()"
+                        [disabled]="unavailable()"
+                        [icon]="PrimeIcons.ARROW_CIRCLE_UP"
+                        (onClick)="onRoleChangeClicked(user)">
+              </p-button>
             }
+
+            @if (!user.isAdmin && !isMyUser(user)) {
+              <p-button class="user-admin-action"
+                        label="Reset Password"
+                        severity="warn"
+                        [loading]="loading()"
+                        [disabled]="unavailable()"
+                        [icon]="PrimeIcons.LOCK_OPEN"
+                        (onClick)="onUserPasswordResetClicked(user)">
+              </p-button>
+            }
+            <span style="flex: 1"></span>
             @if (!isMyUser(user)) {
-              <p-button label="Delete"></p-button>
+              <p-button class="user-admin-action"
+                        label="Delete"
+                        severity="danger"
+                        [loading]="loading()"
+                        [disabled]="unavailable()"
+                        [icon]="PrimeIcons.TRASH"
+                        (onClick)="onDeleteClicked(user)">
+              </p-button>
             }
           </td>
         </tr>
@@ -76,7 +109,17 @@ import {FileSelectEvent, FileUpload} from 'primeng/fileupload';
     FileUpload
   ],
   styles: `
+    .user-admin-action {
+      margin-right: 1em;
+    }
 
+    @media (max-width: 768px) {
+      .user-admin-action {
+        margin-right: unset;
+        margin-bottom: 1em;
+      }
+
+    }
   `
 })
 export class UserDef implements AfterViewInit {
@@ -132,5 +175,59 @@ export class UserDef implements AfterViewInit {
     const name = p.data.name ?? '';
     if (name.length === 0) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
+
+  onRoleChangeClicked(p: Profile) {
+    this.loading.set(true);
+    this.service.promoteOrDemoteUser(p.username)
+      .then(() => {
+        this.loading.set(false);
+        this.msg.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'User role changed successfully!',
+          life: 3000
+        });
+      })
+      .catch(err => {
+        this.loading.set(false);
+        this.msg.add(asErrorMsg(err, 'Failed to change user role'));
+      });
+  }
+
+  onDeleteClicked(p: Profile) {
+    this.loading.set(true);
+    this.service.deleteUser(p.username)
+      .then(() => {
+        this.loading.set(false);
+        this.msg.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'User deleted successfully!',
+          life: 3000
+        });
+      })
+      .catch(err => {
+        this.loading.set(false);
+        this.msg.add(asErrorMsg(err, 'Failed to delete user'));
+      })
+  }
+
+  onUserPasswordResetClicked(p: Profile) {
+    this.loading.set(true);
+    this.service.resetUserPassword(p.username)
+      .then(() => {
+        this.loading.set(false);
+        this.msg.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: `${p.data.name}'s password reset successfully!`,
+          life: 3000
+        });
+      })
+      .catch(err => {
+        this.loading.set(false);
+        this.msg.add(asErrorMsg(err, `Failed to reset ${p.data.name} password`));
+      });
   }
 }
