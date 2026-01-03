@@ -1,12 +1,6 @@
-import {Component, computed, inject, signal} from '@angular/core';
+import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {Card} from 'primeng/card';
-import {
-  FormBuilder,
-  FormControl,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import {FormControl, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SelectButton} from 'primeng/selectbutton';
 import {Button} from 'primeng/button';
 import {MessageService, PrimeIcons} from 'primeng/api';
@@ -16,6 +10,8 @@ import {Router} from '@angular/router';
 import {RevizitService} from '../service/revizit.service';
 import {WaterReportKind} from '../../api/revizit';
 import {Select} from 'primeng/select';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {asErrorMsg} from '../service/errors';
 
 
 @Component({
@@ -108,7 +104,7 @@ import {Select} from 'primeng/select';
     }
   `
 })
-export class CreateReport {
+export class CreateReport implements OnInit {
 
   type = new FormControl<WaterReportKind | null>(null, Validators.required);
   typeFormOptions: { label: string, value: WaterReportKind }[] = [
@@ -158,12 +154,16 @@ export class CreateReport {
     return !type || !selectedFlavour || (type === WaterReportKind.PERCENTAGE && (waterLevel < 0 || waterLevel > 100) || type === WaterReportKind.SWAP && !this.service.waterFlavours().has(selectedFlavour));
   });
 
-  constructor(private fb: FormBuilder) {
-    this.type.valueChanges.subscribe(value => {
+  constructor() {
+    this.type.valueChanges.pipe(takeUntilDestroyed()).subscribe(value => {
       this.selectedType.set(value);
     });
+  }
+
+  ngOnInit(): void {
     this.service.loadWaterFlavours();
   }
+
 
   protected readonly PrimeIcons = PrimeIcons;
 
@@ -181,10 +181,10 @@ export class CreateReport {
         life: 3000
       });
       this.submitting.set(false);
-      this.router.navigateByUrl('/home');
+      return this.router.navigateByUrl('/home');
     }).catch(err => {
-      console.error('Error: ', err);
       this.submitting.set(false);
+      this.messageService.add(asErrorMsg(err, 'Failed to submit report'));
     })
 
   }

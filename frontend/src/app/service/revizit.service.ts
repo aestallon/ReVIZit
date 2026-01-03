@@ -6,7 +6,7 @@ import {
   WaterService,
   WaterStateDto
 } from '../../api/revizit';
-import {lastValueFrom, tap} from 'rxjs';
+import {lastValueFrom} from 'rxjs';
 import {MessageService} from 'primeng/api';
 import {asErrorMsg} from './errors';
 import {UserService} from './user.service';
@@ -15,7 +15,7 @@ const STATE_UNKNOWN: WaterStateDto = {
   emptyGallons: 0,
   waterLevel: 0,
   fullGallons: 0,
-  reportedAt: '',
+  reportedAt: new Date().toISOString(),
   flavour: {
     id: 0,
     name: '<<Unknown>>',
@@ -74,28 +74,20 @@ export class RevizitService {
       this.pendingReports.set(res);
       this.pendingReportError.set(false);
     } catch (e) {
-      console.error('Error on fetching pending reports: ', e);
       this.pendingReportError.set(true);
+      this.messageService.add(asErrorMsg(e, 'Failed to load pending reports'));
     }
   }
 
   async loadWaterFlavours() {
-    try {
-      const res = await lastValueFrom(this.waterApi.getWaterFlavours());
-      const map = new Map<number, WaterFlavourDto>(res.map(flavour => [flavour.id, flavour]));
-      this.waterFlavours.set(map);
-    } catch (e) {
-      console.error('Error on fetching water flavours: ', e);
-    }
+    const res = await lastValueFrom(this.waterApi.getWaterFlavours());
+    const map = new Map<number, WaterFlavourDto>(res.map(flavour => [flavour.id, flavour]));
+    this.waterFlavours.set(map);
   }
 
   async rejectReports(report: WaterReportDetail) {
-    try {
-      await lastValueFrom(this.waterApi.rejectWaterReport([report.id]));
-      await this.loadPendingReports();
-    } catch (e) {
-      console.error('Error on rejecting reports: ', e);
-    }
+    await lastValueFrom(this.waterApi.rejectWaterReport([report.id]));
+    await this.loadPendingReports();
   }
 
   async acceptReports(reports: Array<WaterReportDetail>) {
@@ -103,13 +95,8 @@ export class RevizitService {
   }
 
   async defineState(dto: WaterStateDto) {
-    try {
-      await lastValueFrom(this.waterApi.defineCurrentWaterState(dto));
-      this.waterState.set(dto);
-      return true;
-    } catch (e) {
-      throw e;
-    }
+    await lastValueFrom(this.waterApi.defineCurrentWaterState(dto));
+    this.waterState.set(dto);
   }
 
   async loadAllWaterFlavours() {
@@ -121,7 +108,7 @@ export class RevizitService {
   }
 
   async renameFlavour(flavour: WaterFlavourDto) {
-    const _flavour = await lastValueFrom(this.waterApi.updateWaterFlavour(flavour.id, flavour));
+    const _ = await lastValueFrom(this.waterApi.updateWaterFlavour(flavour.id, flavour));
     await this.loadAllWaterFlavours();
   }
 

@@ -14,7 +14,6 @@ export class UserService {
   private readonly router = inject(Router);
   private readonly user = signal<Profile | null>(null);
   private readonly userEffect = effect(async () => {
-    console.log('User effect triggered');
     await this.refreshProfile();
   });
 
@@ -55,7 +54,6 @@ export class UserService {
         console.error('Error on fetching profile: ', e);
       }
       this.user.set(profile);
-      console.log('User profile: ', this.user());
     } else {
       this.clearToken();
     }

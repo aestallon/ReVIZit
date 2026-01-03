@@ -1,4 +1,4 @@
-import {Component, computed, inject, signal} from '@angular/core';
+import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {RevizitService} from '../service/revizit.service';
 import {UserService} from '../service/user.service';
 import {TableModule} from 'primeng/table';
@@ -18,7 +18,8 @@ import {asErrorMsg} from '../service/errors';
         <div class="reports-description">
           <p>The table below shows the currently pending reports in chronological order.</p>
           <p>You may reject any of them by clicking the <i
-            class="pi pi-times-circle"></i><b> Reject</b> button for the corresponding row, or accept
+            class="pi pi-times-circle"></i><b> Reject</b> button for the corresponding row, or
+            accept
             them by clicking <i class="pi pi-check-circle"></i><b> Accept</b>.</p>
           <p><strong>When you accept a report, you automatically accept all other older reports
             too!</strong></p>
@@ -131,7 +132,7 @@ import {asErrorMsg} from '../service/errors';
     }
   `
 })
-export class Reports {
+export class Reports implements OnInit {
 
   userService = inject(UserService);
   service = inject(RevizitService);
@@ -141,13 +142,15 @@ export class Reports {
 
   readonly hoveredAcceptId = signal<number | null>(null);
   readonly hoveredRejectId = signal<number | null>(null);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
+  readonly unavailable = signal(false);
 
-  constructor() {
-    this.loading.set(true);
+  ngOnInit() {
     Promise.all([this.service.loadPendingReports(), this.service.loadWaterFlavours()])
       .then(() => this.loading.set(false))
-      .catch(err => this.loading.set(false));
+      .catch(err => {
+        this.loading.set(false);
+      });
   }
 
   reportDescription(report: WaterReportDetail): string {
@@ -203,12 +206,17 @@ export class Reports {
   }
 
   descriptionClasses(report: WaterReportDetail) {
-    return WaterReportKind.PERCENTAGE !== report.waterReport.kind ? {'unique-report': true} : {};
+    return WaterReportKind.PERCENTAGE === report.waterReport.kind ? {} : {'unique-report': true};
   }
 
   performReject(dto: WaterReportDetail) {
     this.loading.set(true);
-    this.service.rejectReports(dto).then(() => this.loading.set(false));
+    this.service.rejectReports(dto)
+      .then(() => this.loading.set(false))
+      .catch(err => {
+        this.loading.set(false);
+        this.messageService.add(asErrorMsg(err, 'Failed to reject report'));
+      });
   }
 
   performAccept(dto: WaterReportDetail) {
@@ -225,7 +233,12 @@ export class Reports {
     }
 
     if (!reportFound) {
-      console.error('Could not find report to accept!');
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Failed to accept report',
+        detail: 'The report you tried to accept does not exist anymore. Please reload the page and try again.',
+        life: 3000,
+      });
       return;
     }
 
