@@ -661,6 +661,14 @@ components:
         pfp:
           type: string
       required: [ username, data, isAdmin ]
+    ProfileThumbnail:
+      type: object
+      properties:
+        name:
+          type: string
+        pfp:
+          type: string
+      required: [ name ]
     PasswordChangeRequest:
       type: object
       properties:
@@ -768,8 +776,7 @@ components:
           format: int64
           example: 1
         reportedBy:
-          type: string
-          example: "John Doe"
+          $ref: '#/components/schemas/ProfileThumbnail'
         reportedAt:
           type: string
           format: date-time

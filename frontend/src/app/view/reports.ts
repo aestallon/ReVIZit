@@ -8,6 +8,7 @@ import {Button} from 'primeng/button';
 import {MessageService, PrimeIcons} from 'primeng/api';
 import {Card} from 'primeng/card';
 import {asErrorMsg} from '../service/errors';
+import {UserCard} from '../component/user.card';
 
 @Component({
   selector: 'app-reports',
@@ -45,7 +46,7 @@ import {asErrorMsg} from '../service/errors';
             <tr [ngClass]="rowClasses(report, rowIndex)"
                 (mouseleave)="clearHover()">
               <td [ngClass]="descriptionClasses(report)">{{ reportDescription(report) }}</td>
-              <td>{{ report.reportedBy || 'anonymous' }}</td>
+              <td><app-user-card [user]="report.reportedBy"></app-user-card></td>
               <td>{{ report.reportedAt | date:'medium' }}</td>
               <td class="row-controls">
                 <p-button label="Reject"
@@ -83,7 +84,8 @@ import {asErrorMsg} from '../service/errors';
     DatePipe,
     Button,
     NgClass,
-    Card
+    Card,
+    UserCard
   ],
   styles: `
     .reports-container {

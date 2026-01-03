@@ -213,7 +213,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "[ { \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"waterReport\" : { \"flavourId\" : 1, \"kind\" : \"PERCENTAGE\", \"value\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }, { \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"waterReport\" : { \"flavourId\" : 1, \"kind\" : \"PERCENTAGE\", \"value\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" } ]";
+                    String exampleString = "[ { \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"waterReport\" : { \"flavourId\" : 1, \"kind\" : \"PERCENTAGE\", \"value\" : 75 }, \"id\" : 1, \"reportedBy\" : { \"name\" : \"name\", \"pfp\" : \"pfp\" } }, { \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"waterReport\" : { \"flavourId\" : 1, \"kind\" : \"PERCENTAGE\", \"value\" : 75 }, \"id\" : 1, \"reportedBy\" : { \"name\" : \"name\", \"pfp\" : \"pfp\" } } ]";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }
@@ -305,7 +305,7 @@ public interface WaterApiDelegate {
         getRequest().ifPresent(request -> {
             for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-                    String exampleString = "{ \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"waterReport\" : { \"flavourId\" : 1, \"kind\" : \"PERCENTAGE\", \"value\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }";
+                    String exampleString = "{ \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"waterReport\" : { \"flavourId\" : 1, \"kind\" : \"PERCENTAGE\", \"value\" : 75 }, \"id\" : 1, \"reportedBy\" : { \"name\" : \"name\", \"pfp\" : \"pfp\" } }";
                     ApiUtil.setExampleResponse(request, "application/json", exampleString);
                     break;
                 }

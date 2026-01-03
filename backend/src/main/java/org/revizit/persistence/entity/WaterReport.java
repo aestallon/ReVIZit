@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.type.PostgreSQLEnumJdbcType;
+import org.revizit.rest.model.ProfileThumbnail;
 import org.revizit.rest.model.WaterReportDetail;
 import org.revizit.rest.model.WaterReportDto;
 import org.revizit.rest.model.WaterReportKind;
@@ -68,11 +69,12 @@ public class WaterReport {
 
   public WaterReportDetail toDetail() {
     final var reporter = UserAccount.extractDisplayName(reportedBy);
+    final var pfp = UserAccount.extractPfp(reportedBy);
     final var flavourId = flavour != null ? flavour.getId() : -1L;
     return new WaterReportDetail()
         .id(id.longValue())
         .reportedAt(reportedAt.atOffset(ZoneOffset.UTC))
-        .reportedBy(reporter)
+        .reportedBy(new ProfileThumbnail(reporter).pfp(pfp))
         .waterReport(new WaterReportDto()
             .kind(switch (kind) {
               case BALLOON_REFILL -> WaterReportKind.REFILL;

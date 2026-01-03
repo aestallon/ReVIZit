@@ -5,6 +5,7 @@ export * from './passwordChangeRequest';
 export * from './pfpUpdateResponse';
 export * from './profile';
 export * from './profileData';
+export * from './profileThumbnail';
 export * from './userSelector';
 export * from './waterFlavourDto';
 export * from './waterReportDetail';

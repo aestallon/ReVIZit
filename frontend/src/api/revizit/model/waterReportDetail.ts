@@ -8,12 +8,13 @@
  * Do not edit the class manually.
  */
 import { WaterReportDto } from './waterReportDto';
+import { ProfileThumbnail } from './profileThumbnail';
 
 
 export interface WaterReportDetail { 
     waterReport: WaterReportDto;
     id: number;
-    reportedBy?: string;
+    reportedBy?: ProfileThumbnail;
     reportedAt: string;
 }
 

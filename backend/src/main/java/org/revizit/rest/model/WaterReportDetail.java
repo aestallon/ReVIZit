@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.time.OffsetDateTime;
+import org.revizit.rest.model.ProfileThumbnail;
 import org.revizit.rest.model.WaterReportDto;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.lang.Nullable;
@@ -28,7 +29,7 @@ public class WaterReportDetail {
 
   private Long id;
 
-  private @Nullable String reportedBy;
+  private @Nullable ProfileThumbnail reportedBy;
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private OffsetDateTime reportedAt;
@@ -86,7 +87,7 @@ public class WaterReportDetail {
     this.id = id;
   }
 
-  public WaterReportDetail reportedBy(@Nullable String reportedBy) {
+  public WaterReportDetail reportedBy(@Nullable ProfileThumbnail reportedBy) {
     this.reportedBy = reportedBy;
     return this;
   }
@@ -95,14 +96,14 @@ public class WaterReportDetail {
    * Get reportedBy
    * @return reportedBy
    */
-  
-  @Schema(name = "reportedBy", example = "John Doe", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @Valid 
+  @Schema(name = "reportedBy", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("reportedBy")
-  public @Nullable String getReportedBy() {
+  public @Nullable ProfileThumbnail getReportedBy() {
     return reportedBy;
   }
 
-  public void setReportedBy(@Nullable String reportedBy) {
+  public void setReportedBy(@Nullable ProfileThumbnail reportedBy) {
     this.reportedBy = reportedBy;
   }
 

@@ -34,6 +34,19 @@ public class UserAccount implements UserDetails {
     return displayName;
   }
 
+  public static String extractPfp(final UserAccount user) {
+    if (user == null) {
+      return null;
+    }
+
+    final var profile = user.getProfile();
+    if (profile == null) {
+      return null;
+    }
+
+    return profile.getProfilePictureUrl();
+  }
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
