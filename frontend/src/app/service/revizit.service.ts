@@ -1,4 +1,4 @@
-import {effect, inject, Injectable, signal} from '@angular/core';
+import {effect, inject, Injectable, OnInit, signal} from '@angular/core';
 import {
   WaterFlavourDto,
   WaterReportDetail,
@@ -10,6 +10,7 @@ import {lastValueFrom} from 'rxjs';
 import {MessageService} from 'primeng/api';
 import {asErrorMsg} from './errors';
 import {UserService} from './user.service';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 const STATE_UNKNOWN: WaterStateDto = {
   emptyGallons: 0,
@@ -46,6 +47,11 @@ export class RevizitService {
       await this.loadPendingReports();
     }
   })
+
+  constructor() {
+    this.userService._needStateRefresh.pipe(takeUntilDestroyed()).subscribe(() => this.loadWaterState());
+    this.userService._needReportRefresh.pipe(takeUntilDestroyed()).subscribe(() => this.loadPendingReports());
+  }
 
   async loadWaterState() {
     await this.loadWaterFlavours();

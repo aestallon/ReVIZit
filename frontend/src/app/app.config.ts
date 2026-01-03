@@ -18,6 +18,7 @@ import {definePreset} from '@primeuix/themes';
 import {MessageService} from 'primeng/api';
 import {BASE_PATH} from '../api/revizit';
 import {UserService} from './service/user.service';
+import {SseClient} from 'ngx-sse-client';
 
 const Theme = definePreset(Aura, {});
 
@@ -42,5 +43,6 @@ export const appConfig: ApplicationConfig = {
     MessageService,
     {provide: BASE_PATH, useValue: '/api'},
     UserService,
+    SseClient,
   ]
 };
