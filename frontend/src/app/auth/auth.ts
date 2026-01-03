@@ -1,6 +1,6 @@
 import {CanActivateFn, RedirectFunction, Router} from '@angular/router';
 import {inject} from '@angular/core';
-import {HttpEventType, HttpInterceptorFn} from '@angular/common/http';
+import {HttpErrorResponse, HttpEventType, HttpInterceptorFn} from '@angular/common/http';
 import {tap} from 'rxjs';
 import {UserService} from '../service/user.service';
 
@@ -26,14 +26,22 @@ export const INTERCEPTOR_REQUEST: HttpInterceptorFn = (req, next) => {
 }
 
 export const INTERCEPTOR_RESPONSE: HttpInterceptorFn = (req, next) => {
+  const userService = inject(UserService);
+  const router = inject(Router);
   return next(req).pipe(tap(event => {
     if (event.type === HttpEventType.Response) {
-
+      console.log('foo', event);
       if (event.status === 401 || event.status === 403) {
-        inject(UserService).clearToken();
-        inject(Router).navigateByUrl('login');
+        userService.clearToken();
+        router.navigateByUrl('login');
       }
 
+    }
+  }, async (error: HttpErrorResponse) => {
+    if (error.status === 401 || error.status === 403) {
+      console.log('error', error);
+      userService.clearToken();
+      await router.navigateByUrl('login');
     }
   }));
 }
