@@ -1,6 +1,6 @@
 import {CanActivateFn, RedirectFunction, Router} from '@angular/router';
 import {inject} from '@angular/core';
-import {HttpErrorResponse, HttpEventType, HttpInterceptorFn} from '@angular/common/http';
+import {HttpErrorResponse, HttpEvent, HttpEventType, HttpInterceptorFn} from '@angular/common/http';
 import {tap} from 'rxjs';
 import {UserService} from '../service/user.service';
 
@@ -28,20 +28,26 @@ export const INTERCEPTOR_REQUEST: HttpInterceptorFn = (req, next) => {
 export const INTERCEPTOR_RESPONSE: HttpInterceptorFn = (req, next) => {
   const userService = inject(UserService);
   const router = inject(Router);
-  return next(req).pipe(tap(event => {
-    if (event.type === HttpEventType.Response) {
-      console.log('foo', event);
-      if (event.status === 401 || event.status === 403) {
-        userService.clearToken();
-        router.navigateByUrl('login');
+  return next(req).pipe(tap({
+    next: (event: HttpEvent<unknown>) => {
+      if (event.type !== HttpEventType.Response) {
+        return;
       }
 
-    }
-  }, async (error: HttpErrorResponse) => {
-    if (error.status === 401 || error.status === 403) {
-      console.log('error', error);
+      if (!(event.status === 401 || event.status === 403)) {
+        return;
+      }
+
       userService.clearToken();
-      await router.navigateByUrl('login');
+      router.navigateByUrl('login');
+    },
+    error: (error: HttpErrorResponse): void => {
+      if (!(error.status === 401 || error.status === 403)) {
+        return;
+      }
+
+      userService.clearToken();
+      router.navigateByUrl('login');
     }
   }));
 }
