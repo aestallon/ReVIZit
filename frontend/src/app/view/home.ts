@@ -15,8 +15,9 @@ import {RevizitService} from '../service/revizit.service';
       <app-water-gallon class="gallon-display" [waterLevel]="waterLevel()"></app-water-gallon>
       <div class="home-description">
         <h1>Current water level is <span [class]="percentageStyle()">{{ waterLevel() }}%</span></h1>
-        <h2>There are <b>{{ fullCount() }}</b> full gallons,</h2>
-        <h2>and <b>{{ emptyCount() }}</b> empty ones.</h2>
+        <h2>There {{ fullCount() === 1 ? 'is' : 'are' }} <b>{{ fullCount() }}</b> full
+          gallon{{ fullCount() === 1 ? '' : 's' }},</h2>
+        <h2>and <b>{{ emptyCount() }}</b> empty one{{ emptyCount() === 1 ? '' : 's' }}.</h2>
         <i>As of {{ reportDate() | date }}</i>
         <div class="cta">
           <div class="cta-content">
