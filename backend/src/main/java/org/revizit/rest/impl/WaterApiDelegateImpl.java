@@ -111,7 +111,9 @@ public class WaterApiDelegateImpl implements WaterApiDelegate {
   @Override
   public ResponseEntity<List<WaterStateDetail>> getWaterStates(OffsetDateTime from,
                                                                OffsetDateTime to) {
-    return waterService.stateHistory(from.toLocalDateTime(), to.toLocalDateTime()).stream()
+    final var fromLdt = from == null ? null : from.toLocalDateTime();
+    final var toLdt = to == null ? null : to.toLocalDateTime();
+    return waterService.stateHistory(fromLdt, toLdt).stream()
         .map(WaterState::toDetail)
         .collect(collectingAndThen(toList(), ResponseEntity::ok));
   }

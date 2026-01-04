@@ -422,8 +422,8 @@ class WaterServiceTest {
     List<WaterState> history = waterService.stateHistory(t1Dt.minusSeconds(1), t2Dt.plusSeconds(1));
     // Should include states from t1Accept and t2Accept
     assertThat(history).hasSize(2);
-    assertThat(history.get(0).getCurrPct()).isEqualTo(60);
-    assertThat(history.get(1).getCurrPct()).isEqualTo(80);
+    assertThat(history.get(0).getCurrPct()).isEqualTo(80);
+    assertThat(history.get(1).getCurrPct()).isEqualTo(60);
 
     // Check range excluding the first one
     List<WaterState> history2 = waterService.stateHistory(t1Dt.plusMinutes(1), t2Dt.plusSeconds(1));

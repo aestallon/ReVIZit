@@ -37,7 +37,7 @@ public class WaterService {
   }
 
   public List<WaterState> stateHistory(LocalDateTime from, LocalDateTime to) {
-    return waterStateRepository.findByCreatedAtBetweenOrderByCreatedAtDesc(from, to);
+    return waterStateRepository.findStateHistory(from, to);
   }
 
   @Transactional

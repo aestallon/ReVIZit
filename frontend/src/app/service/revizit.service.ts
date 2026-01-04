@@ -3,7 +3,7 @@ import {
   WaterFlavourDto,
   WaterReportDetail,
   WaterReportDto,
-  WaterService,
+  WaterService, WaterStateDetail,
   WaterStateDto
 } from '../../api/revizit';
 import {lastValueFrom} from 'rxjs';
@@ -38,6 +38,8 @@ export class RevizitService {
 
   readonly allWaterFlavours = signal<Array<WaterFlavourDto>>([]);
   readonly usedWaterFlavours = signal<Set<number>>(new Set());
+
+  readonly stateHistory = signal<Array<WaterStateDetail>>([]);
 
   userService = inject(UserService);
   waterApi = inject(WaterService);
@@ -134,4 +136,16 @@ export class RevizitService {
     await this.loadAllWaterFlavours();
   }
 
+  async fetchWaterStates(interval: Partial<Interval<Date>>) {
+    const states = await lastValueFrom(this.waterApi.getWaterStates(
+      interval.from?.toISOString(),
+      interval.to?.toISOString()));
+    this.stateHistory.set(states);
+  }
+
+}
+
+export interface Interval<T> {
+  from: T;
+  to: T;
 }
