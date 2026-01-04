@@ -1,5 +1,7 @@
 package org.revizit.service;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -7,12 +9,14 @@ import java.util.Set;
 import java.util.UUID;
 import static java.util.stream.Collectors.toSet;
 import org.jspecify.annotations.NonNull;
+import org.revizit.persistence.entity.SysLog;
 import org.revizit.persistence.entity.UserAccount;
 import org.revizit.persistence.entity.UserProfile;
 import org.revizit.persistence.repository.UserAccountRepository;
 import org.revizit.rest.model.Profile;
 import org.revizit.rest.model.ProfileData;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +35,8 @@ public class UserService implements UserDetailsService {
   public static final String ROLE_PLAIN = "PLAIN";
   public static final String ROLE_ADMIN = "ADMIN";
 
+  private final ApplicationEventPublisher eventPublisher;
+  private final Clock clock;
   private final UserAccountRepository userAccountRepository;
   private final PasswordEncoder passwordEncoder;
   private final ImageStorageService imageStorageService;
@@ -61,7 +67,8 @@ public class UserService implements UserDetailsService {
   }
 
   @Override
-  public @NonNull UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
+  public @NonNull UserDetails loadUserByUsername(@NonNull String username)
+      throws UsernameNotFoundException {
     return userAccountRepository
         .findByUsername(username)
         .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
@@ -100,7 +107,12 @@ public class UserService implements UserDetailsService {
     }
 
     userAccount.setUserPw(passwordEncoder.encode(newPassword));
-    return userAccountRepository.save(userAccount);
+    final var result = userAccountRepository.save(userAccount);
+    eventPublisher.publishEvent(SysLog.ofUserPasswordReset(
+        result,
+        currentUser(),
+        LocalDateTime.now(clock)));
+    return result;
   }
 
   @Transactional
@@ -115,7 +127,11 @@ public class UserService implements UserDetailsService {
     userAccount.setUserRole(ROLE_PLAIN);
     userAccount.setUserPw("not-set");
     userAccount.setMailAddr("not-set");
-    userAccountRepository.save(userAccount);
+    userAccount = userAccountRepository.save(userAccount);
+    eventPublisher.publishEvent(SysLog.ofUserDeleted(
+        userAccount,
+        currentUser(),
+        LocalDateTime.now(clock)));
   }
 
   @Transactional
@@ -216,6 +232,10 @@ public class UserService implements UserDetailsService {
     }
 
     userAccountRepository.saveAll(users);
+    eventPublisher.publishEvent(SysLog.ofUsersCreated(
+        users,
+        currentUser(),
+        LocalDateTime.now(clock)));
   }
 
   @Transactional
@@ -225,13 +245,18 @@ public class UserService implements UserDetailsService {
     }
 
     final var roleToSet = admin ? ROLE_ADMIN : ROLE_PLAIN;
-    final var user = (UserAccount) loadUserByUsername(username);
+    var user = (UserAccount) loadUserByUsername(username);
     if (roleToSet.equals(user.getUserRole())) {
       return user;
     }
 
     user.setUserRole(roleToSet);
-    return userAccountRepository.save(user);
+    user = userAccountRepository.save(user);
+    eventPublisher.publishEvent(SysLog.ofUserRoleChanged(
+        user,
+        currentUser(),
+        LocalDateTime.now(clock)));
+    return user;
   }
 
   public Profile toDto(UserAccount user) {

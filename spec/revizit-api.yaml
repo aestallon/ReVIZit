@@ -11,6 +11,8 @@ tags:
     description: Water related stuff
   - name: UserManagement
     description: User management related stuff
+  - name: SysLog
+    description: Stuff about application logs
 paths:
 
   # Auth
@@ -622,6 +624,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/WaterFlavourDto'
 
+  # SysLogs
+  /syslog:
+    get:
+      summary: Returns application events.
+      description: |
+        Returns application events between the FROM and TO values, ordered by timestamp. If no 
+        values are provided, today's events are returned.
+      operationId: getSysLogs
+      tags:
+        - SysLog
+      parameters:
+        - name: from
+          in: query
+          description: The earliest date to include in the result.
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: The latest date to include in the result.
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SysLogEntry'
 
 components:
   schemas:
@@ -798,3 +834,29 @@ components:
           default: false
           example: false
       required: [ id, name, inactive ]
+
+    SysLogEntryElement:
+      type: object
+      properties:
+        qualifier:
+          type: string
+        name:
+          type: string
+        msg:
+          type: string
+      required: [ qualifier, name, msg ]
+    SysLogEntry:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        user:
+          type: string
+        action:
+          type: string
+        elements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SysLogEntryElement'
+      required: [ timestamp, user, action, elements ]

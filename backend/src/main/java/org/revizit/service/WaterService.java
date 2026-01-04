@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.revizit.persistence.entity.ReportType;
+import org.revizit.persistence.entity.SysLog;
 import org.revizit.persistence.entity.WaterFlavour;
 import org.revizit.persistence.entity.WaterReport;
 import org.revizit.persistence.entity.WaterState;
@@ -17,6 +18,7 @@ import org.revizit.persistence.repository.WaterReportRepository;
 import org.revizit.persistence.repository.WaterStateRepository;
 import org.revizit.rest.model.WaterReportDto;
 import org.revizit.rest.model.WaterStateDto;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WaterService {
 
+  private final ApplicationEventPublisher eventPublisher;
   private final Clock clock;
   private final UserService userService;
   private final WaterStateRepository waterStateRepository;
@@ -58,14 +61,16 @@ public class WaterService {
         .flavour(getFlavour(flavourId).orElseThrow())
         .build();
     report = waterReportRepository.save(report);
-    final var state = WaterState.builder()
+    var state = WaterState.builder()
         .currPct(dto.getWaterLevel())
         .emptyCnt(dto.getEmptyGallons())
         .fullCnt(dto.getFullGallons())
         .createdAt(now)
         .report(report)
         .build();
-    return waterStateRepository.save(state);
+    state = waterStateRepository.save(state);
+    eventPublisher.publishEvent(SysLog.ofStateDefined(state));
+    return state;
   }
 
   @Transactional
@@ -98,7 +103,9 @@ public class WaterService {
           .val(currReport.getVal())
           .flavour(currReport.getFlavour());
     }
-    return waterReportRepository.save(reportBuilder.build());
+    final var report = waterReportRepository.save(reportBuilder.build());
+    eventPublisher.publishEvent(SysLog.ofReportSubmitted(report));
+    return report;
   }
 
   public List<WaterReport> getPendingReports() {
@@ -150,6 +157,8 @@ public class WaterService {
         }
       };
     }
+
+    eventPublisher.publishEvent(SysLog.ofReportsAccepted(reportsToAccept));
     return state;
   }
 
@@ -177,6 +186,7 @@ public class WaterService {
       report.setRejectedBy(user);
     }
     waterReportRepository.saveAll(reportsToReject);
+    eventPublisher.publishEvent(SysLog.ofReportsRejected(reportsToReject));
   }
 
 

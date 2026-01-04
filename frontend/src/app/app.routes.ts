@@ -30,6 +30,11 @@ export const routes: Routes = [
     loadComponent: () => import('./view/profile').then(m => m.Profile),
     canActivate: [AUTH_GUARD]
   },
+  {
+    path: 'logs',
+    loadComponent: () => import('./view/system-logs').then(m => m.SystemLogs),
+    canActivate: [AUTH_GUARD],
+  },
 
   {path: '**', redirectTo: '/home'}
 

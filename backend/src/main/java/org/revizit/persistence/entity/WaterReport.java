@@ -84,4 +84,12 @@ public class WaterReport {
             .value(val)
             .flavourId(flavourId));
   }
+
+  public String asMsgString() {
+    return switch (kind) {
+      case BALLOON_REFILL -> "Refilled empty gallons.";
+      case BALLOON_CHANGE -> "Changed the active gallon.";
+      case SET_PERCENTAGE -> String.format("Water level is at %d%%", val);
+    };
+  }
 }

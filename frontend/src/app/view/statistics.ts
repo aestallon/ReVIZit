@@ -11,6 +11,7 @@ import {UIChart} from 'primeng/chart';
 import {FloatLabel} from 'primeng/floatlabel';
 import {ChartOptions} from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import {IntervalSelector} from '../component/interval-selector';
 
 const createReporterOptions = (): ChartOptions => {
   const documentStyle = getComputedStyle(document.documentElement);
@@ -33,35 +34,12 @@ const createReporterOptions = (): ChartOptions => {
   template: `
     <p-card header="Statistics">
       <p-panel header="Select period">
-        <div class="interval-selection-form">
-          <p-float-label>
-            <label for="on_intervalSelectorFrom">From</label>
-            <p-date-picker id="intervalSelectorFrom"
-                           placeholder="From..."
-                           [(ngModel)]="from"
-                           dateFormat="d MM, yy"
-                           [showClear]="true"
-                           [disabled]="loading() || unavailable()">
-            </p-date-picker>
-          </p-float-label>
-          <p-float-label>
-            <label for="on_intervalSelectorTo">Until</label>
-            <p-date-picker id="intervalSelectorTo"
-                           placeholder="Until..."
-                           [(ngModel)]="to"
-                           dateFormat="d MM, yy"
-                           [showClear]="true"
-                           [disabled]="loading() || unavailable()">
-            </p-date-picker>
-          </p-float-label>
-          <p-button severity="primary"
-                    label="Fetch"
-                    [icon]="PrimeIcons.REFRESH"
-                    [loading]="loading()"
-                    [disabled]="unavailable()"
-                    (onClick)="fetchWaterStates()">
-          </p-button>
-        </div>
+        <app-interval-selector [(from)]="from"
+                               [(to)]="to"
+                               [loading]="loading()"
+                               [unavailable]="unavailable()"
+                               (onFetch)="fetchWaterStates()">
+        </app-interval-selector>
       </p-panel>
       <p-panel header="Water State History">
         <p-chart type="line"
@@ -86,15 +64,10 @@ const createReporterOptions = (): ChartOptions => {
     FormsModule,
     Button,
     UIChart,
-    FloatLabel
+    FloatLabel,
+    IntervalSelector
   ],
   styles: `
-    .interval-selection-form {
-      display: flex;
-      gap: 2rem;
-      padding-top: 2rem;
-    }
-
     .chart {
       height: 400px;
     }

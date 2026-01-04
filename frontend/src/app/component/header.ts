@@ -216,6 +216,7 @@ export class Header {
       ? [
         {label: 'Profile', icon: PrimeIcons.USER_EDIT, routerLink: '/profile'},
         {label: 'Settings', icon: PrimeIcons.COG, routerLink: '/settings'},
+        {label: 'Logs', icon: PrimeIcons.LIST, routerLink: '/logs'},
         {separator: true},
         {label: 'Log Out', icon: PrimeIcons.SIGN_OUT, command: () => this.onLogoutClicked(),},
       ]

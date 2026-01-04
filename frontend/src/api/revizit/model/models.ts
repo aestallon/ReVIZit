@@ -6,6 +6,8 @@ export * from './pfpUpdateResponse';
 export * from './profile';
 export * from './profileData';
 export * from './profileThumbnail';
+export * from './sysLogEntry';
+export * from './sysLogEntryElement';
 export * from './userSelector';
 export * from './waterFlavourDto';
 export * from './waterReportDetail';
