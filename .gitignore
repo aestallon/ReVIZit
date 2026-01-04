@@ -43,3 +43,4 @@ out/
 ## Artefacts ##
 /media/
 /logs/
+/backend/logs/

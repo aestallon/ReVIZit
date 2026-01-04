@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'org.revizit'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 description = 'revizit'
 
 java {
@@ -62,6 +62,12 @@ dependencies {
 
 tasks.named('test') {
   useJUnitPlatform()
+}
+
+// this only disables the plain jar creation, not the executable bootJar
+// see: https://docs.spring.io/spring-boot/gradle-plugin/packaging.html#packaging-executable.and-plain-archives
+tasks.named('jar') {
+  enabled = false
 }
 
 openApiGenerate {
