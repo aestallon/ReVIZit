@@ -1,14 +1,11 @@
 import {AfterViewInit, Component, computed, inject, signal} from '@angular/core';
 import {Card} from 'primeng/card';
 import {Panel} from 'primeng/panel';
-import {DatePicker} from 'primeng/datepicker';
 import {FormsModule} from '@angular/forms';
 import {RevizitService} from '../service/revizit.service';
 import {MessageService, PrimeIcons} from 'primeng/api';
 import {asErrorMsg} from '../service/errors';
-import {Button} from 'primeng/button';
 import {UIChart} from 'primeng/chart';
-import {FloatLabel} from 'primeng/floatlabel';
 import {ChartOptions} from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import {IntervalSelector} from '../component/interval-selector';
@@ -60,11 +57,8 @@ const createReporterOptions = (): ChartOptions => {
   imports: [
     Card,
     Panel,
-    DatePicker,
     FormsModule,
-    Button,
     UIChart,
-    FloatLabel,
     IntervalSelector
   ],
   styles: `

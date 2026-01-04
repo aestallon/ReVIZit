@@ -63,7 +63,17 @@ public class SysLog {
   }
 
   public static SysLog ofReportsAccepted(List<WaterReport> reports) {
-    final var accepter = reports.getFirst().getApprovedBy().getUsername();
+    final var accepter = reports.stream()
+        .filter(it -> it.getApprovedBy() != null)
+        .findFirst()
+        .map(WaterReport::getApprovedBy)
+        .map(UserAccount::getUsername)
+        .orElseGet(() -> reports.stream()
+            .filter(it -> it.getRejectedBy() != null)
+            .findFirst()
+            .map(WaterReport::getRejectedBy)
+            .map(UserAccount::getUsername)
+            .orElse("unknown"));
     final var sysLog = new SysLog();
     sysLog.setAction("reportsAccepted");
     sysLog.setUsername(accepter);
