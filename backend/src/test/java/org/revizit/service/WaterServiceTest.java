@@ -83,6 +83,7 @@ class WaterServiceTest {
 
     Mockito.when(userService.currentUser()).thenReturn(adminUser);
     Mockito.when(userService.isCurrentUserAdmin()).thenReturn(true);
+    Mockito.when(userService.isUserAdmin(adminUser)).thenReturn(true);
 
     Mockito.when(clock.getZone()).thenReturn(ZoneId.of("UTC"));
     Mockito.when(clock.instant()).thenAnswer(_ -> Instant.now());
@@ -522,6 +523,159 @@ class WaterServiceTest {
     assertThatThrownBy(() -> waterService.acceptReports(ids))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Log-in is required");
+  }
+
+  @Test
+  void rollbackToPreviousState_whenHeadStateIdIsSubmitted_succeedsWithSingleStateRevert() {
+    final var stateAfterAccepts = initAndAcceptReportsForRollbackTest();
+
+    final var headStateId = waterService.currentState().getId().longValue();
+    assertThat(headStateId).isEqualTo(stateAfterAccepts.getId().longValue());
+
+    final var newState = waterService.rollbackToPreviousState(headStateId);
+    assertThat(newState)
+        .returns(100, WaterState::getCurrPct)
+        .returns(2, WaterState::getEmptyCnt)
+        .returns(1, WaterState::getFullCnt);
+    final var newStateId = newState.getId().longValue();
+    assertThat(waterService.stateHistory(null, null).getLast().getId().longValue()).isEqualTo(
+        newStateId);
+    assertPendingReportList(List.of(ReportAssert.percentage(80)));
+  }
+
+  @Test
+  void rollbackToPreviousState_whenNonHeadStateIdIsSubmitted_succeedsWithMultipleStateRevert() {
+    final var stateAfterAccepts = initAndAcceptReportsForRollbackTest();
+    final var headStateId = waterService.currentState().getId().longValue();
+    assertThat(headStateId).isEqualTo(stateAfterAccepts.getId().longValue());
+
+    final var targetStateId = headStateId - 1;
+    final var newState = waterService.rollbackToPreviousState(targetStateId);
+    assertThat(newState)
+        .returns(20, WaterState::getCurrPct)
+        .returns(1, WaterState::getEmptyCnt)
+        .returns(2, WaterState::getFullCnt);
+    final var newStateId = newState.getId().longValue();
+    assertThat(waterService.stateHistory(null, null).getLast().getId().longValue()).isEqualTo(
+        newStateId);
+    assertPendingReportList(List.of(ReportAssert.swap(), ReportAssert.percentage(80)));
+  }
+
+  @Test
+  void rrollbackToPreviousState_whenInvalidStateId_failsWithNotFoundException() {
+    final var stateAfterAccepts = initAndAcceptReportsForRollbackTest();
+    final var headStateId = waterService.currentState().getId().longValue();
+    assertThat(headStateId).isEqualTo(stateAfterAccepts.getId().longValue());
+
+    assertThatThrownBy(() -> waterService.rollbackToPreviousState(1_337L))
+        .isInstanceOf(NotFoundException.class);
+  }
+
+  @Test
+  void rollbackToPreviousState_rollbackToInitialState_succeeds() {
+    final var stateAfterAccepts = initAndAcceptReportsForRollbackTest();
+    final var headStateId = waterService.currentState().getId().longValue();
+    assertThat(headStateId).isEqualTo(stateAfterAccepts.getId().longValue());
+
+    final var initialStateId = waterService.stateHistory(null, null).getFirst().getId().longValue();
+    final var newState = waterService.rollbackToPreviousState(initialStateId);
+    assertThat(newState).isNull();
+    assertThat(waterService.currentState()).isNull();
+    assertPendingReportList(List.of(
+        ReportAssert.percentage(80), // <-- initial state
+        ReportAssert.percentage(70),
+        ReportAssert.percentage(50),
+        ReportAssert.percentage(20),
+        ReportAssert.swap(),
+        ReportAssert.percentage(80)));
+  }
+
+  @Test
+  void rollbackToPreviousState_whenUserIsNotAdmin_fails() {
+    final var stateAfterAccepts = initAndAcceptReportsForRollbackTest();
+    final var headStateId = waterService.currentState().getId().longValue();
+    assertThat(headStateId).isEqualTo(stateAfterAccepts.getId().longValue());
+
+    Mockito.when(userService.isCurrentUserAdmin()).thenReturn(false);
+    Mockito.when(userService.currentUser()).thenReturn(regularUser);
+    Mockito.when(userService.isUserAdmin(regularUser)).thenReturn(false);
+
+    assertThatThrownBy(() -> waterService.rollbackToPreviousState(headStateId))
+        .isInstanceOf(NotAuthorisedException.class);
+  }
+
+  private WaterState initAndAcceptReportsForRollbackTest() {
+    final var flavour = waterService.createFlavour("Apple");
+    WaterStateDto dto = new WaterStateDto()
+        .flavour(new WaterFlavourDto().id(flavour.getId().longValue()).name("Apple"))
+        .waterLevel(80)
+        .emptyGallons(1)
+        .fullGallons(2);
+    waterService.defineState(dto);
+    final List<WaterReportDto> reportDtos = List.of(
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(70),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(50),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(20),
+        new WaterReportDto().kind(WaterReportKind.SWAP).flavourId(flavour.getId().longValue()),
+        new WaterReportDto().kind(WaterReportKind.PERCENTAGE).value(80));
+    final var ids = new ArrayList<Long>(reportDtos.size());
+    reportDtos.forEach(
+        reportDto -> ids.add(waterService.registerReport(reportDto).getId().longValue()));
+    return waterService.acceptReports(ids);
+  }
+
+  sealed interface ReportAssert {
+
+    static ReportAssert percentage(int value) {
+      return new Percentage(value);
+    }
+
+    static ReportAssert refill() {
+      return new Refill();
+    }
+
+    static ReportAssert swap() {
+      return new Swap();
+    }
+
+    void check(WaterReport report);
+
+    record Percentage(int value) implements ReportAssert {
+      @Override
+      public void check(WaterReport report) {
+        assertThat(report)
+            .returns(value, WaterReport::getVal)
+            .returns(ReportType.SET_PERCENTAGE, WaterReport::getKind);
+      }
+    }
+
+
+    record Refill() implements ReportAssert {
+
+      @Override
+      public void check(WaterReport report) {
+        assertThat(report).returns(ReportType.BALLOON_REFILL, WaterReport::getKind);
+      }
+    }
+
+
+    record Swap() implements ReportAssert {
+      @Override
+      public void check(WaterReport report) {
+        assertThat(report).returns(ReportType.BALLOON_CHANGE, WaterReport::getKind);
+      }
+    }
+
+  }
+
+  private void assertPendingReportList(List<ReportAssert> reportAsserts) {
+    final var pendingReports = waterService.getPendingReports();
+    assertThat(pendingReports).hasSize(reportAsserts.size());
+    for (int i = 0; i < reportAsserts.size(); i++) {
+      final var report = pendingReports.get(i);
+      final var reportAssert = reportAsserts.get(i);
+      reportAssert.check(report);
+    }
   }
 
   @Test
