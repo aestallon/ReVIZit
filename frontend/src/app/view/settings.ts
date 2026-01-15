@@ -13,14 +13,14 @@ import {WaterRollback} from '../component/settings/water-rollback';
   template: `
     <p-card header="Settings" class="settings-card">
       <div class="settings-content">
-        <p-panel header="Define the Current State">
+        <p-panel header="Define the Current State" [toggleable]="true">
           <app-water-state-def></app-water-state-def>
           <app-water-rollback></app-water-rollback>
         </p-panel>
-        <p-panel header="Flavours">
+        <p-panel header="Flavours" [toggleable]="true">
           <app-water-flavour-def></app-water-flavour-def>
         </p-panel>
-        <p-panel header="Users">
+        <p-panel header="Users" [toggleable]="true">
           <app-user-def></app-user-def>
         </p-panel>
       </div>

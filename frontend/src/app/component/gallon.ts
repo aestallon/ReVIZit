@@ -8,6 +8,7 @@ import {
   signal, viewChild,
   ViewChild
 } from '@angular/core';
+import {NgClass} from '@angular/common';
 
 const SVG_HEIGHT = 512;
 const SVG_WIDTH = 512;
@@ -15,16 +16,18 @@ const SVG_WIDTH = 512;
 @Component({
   selector: 'app-water-gallon',
   standalone: true,
-  imports: [],
+  imports: [
+    NgClass
+  ],
   template: `
     <svg #ballonSvg
-         class="gallon-svg"
+         [ngClass]="flipped() ? 'gallon-svg gallon-flipped': 'gallon-svg'"
          [style]="editable() ? 'cursor: pointer;' : 'cursor: default;'"
          viewBox="0 0 512 512"
          preserveAspectRatio="xMidYMid meet"
     >
       <defs>
-        <clipPath id="waterClip">
+        <clipPath [attr.id]="clipPathId">
           <rect
             x="0"
             [attr.y]="waterClipY()"
@@ -51,7 +54,7 @@ const SVG_WIDTH = 512;
         y="0"
         width="512"
         height="512"
-        clip-path="url(#waterClip)"
+        [attr.clip-path]="'url(#' + clipPathId + ')'"
         class="gallon-water"
       />
     </svg>
@@ -76,9 +79,19 @@ const SVG_WIDTH = 512;
     .gallon-water {
       filter: none;
     }
+
+    .gallon-flipped {
+      transform: rotate(180deg);
+    }
   `,
 })
 export class WaterGallonComponent /* implements AfterViewInit*/ {
+
+  private static nextId = 0;
+  readonly clipPathId = `waterClip-${WaterGallonComponent.nextId++}`;
+
+  flipped = input<boolean>(false);
+
   waterLevel = model.required<number>();
   editable = input<boolean>(false);
 

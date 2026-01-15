@@ -1,13 +1,12 @@
 import {Component, computed, inject, OnInit, signal} from '@angular/core';
-import {WaterReportDetail, WaterStateDetail} from '../../../api/revizit';
+import {WaterStateDetail} from '../../../api/revizit';
 import {RevizitService} from '../../service/revizit.service';
 import {MessageService, PrimeIcons, PrimeTemplate} from 'primeng/api';
-import {lastValueFrom} from 'rxjs';
 import {asErrorMsg} from '../../service/errors';
 import {Button} from 'primeng/button';
 import {DatePipe, NgClass} from '@angular/common';
 import {TableModule} from 'primeng/table';
-import {UserCard} from '../user.card';
+import {WaterGallonComponent} from '../gallon';
 
 @Component({
   selector: 'app-water-rollback',
@@ -17,11 +16,14 @@ import {UserCard} from '../user.card';
                dataKey="id"
                [rowHover]="true"
                [loading]="loading()" class="reports-table">
+        <ng-template pTemplate="caption">
+          <h4>Rollback State</h4>
+        </ng-template>
         <ng-template pTemplate="header">
           <tr>
             <th>Full</th>
             <th>Empty</th>
-            <th>Current %</th>
+            <th>Water Level</th>
             <th>Timestamp</th>
             <th>Actions</th>
           </tr>
@@ -32,18 +34,34 @@ import {UserCard} from '../user.card';
                      let-rowIndex="rowIndex">
           <tr [ngClass]="rowClasses(state, rowIndex)"
               (mouseleave)="clearHover()">
-            <td>{{ state.waterState.fullGallons }}</td>
-            <td>{{ state.waterState.emptyGallons }}</td>
-            <td>{{ state.waterState.waterLevel }}</td>
+            <td>{{ state.waterState.fullGallons }} x
+              <app-water-gallon [waterLevel]="100" [editable]="false"
+                                [flipped]="true"></app-water-gallon>
+            </td>
+            <td><span>{{ state.waterState.emptyGallons }} x </span>
+              <app-water-gallon [waterLevel]="0" [editable]="false"
+                                [flipped]="true"></app-water-gallon>
+            </td>
+            <td>{{ state.waterState.waterLevel }}%
+              <app-water-gallon [waterLevel]="state.waterState.waterLevel"
+                                [editable]="false"></app-water-gallon>
+            </td>
             <td>{{ state.waterState.reportedAt | date:'medium' }}</td>
             <td class="row-controls">
-              <p-button label="ROLLBACK"
-                        severity="danger"
-                        [icon]="PrimeIcons.TIMES_CIRCLE"
-                        [disabled]="loading()"
-                        (mouseenter)="hoverRollback(state)"
-                        (onClick)="performRollback(state)">
-              </p-button>
+              @if (!isAfterRollbackRow(rowIndex)) {
+                <p-button label="ROLLBACK"
+                          severity="danger"
+                          [icon]="PrimeIcons.TIMES_CIRCLE"
+                          [disabled]="loading()"
+                          (mouseenter)="hoverRollback(state)"
+                          (onClick)="performRollback(state)">
+                </p-button>
+              }
+              @if (isAfterRollbackRow(rowIndex)) {
+                <div class="rollback-popup">
+                  State after rollback
+                </div>
+              }
             </td>
           </tr>
         </ng-template>
@@ -63,12 +81,76 @@ import {UserCard} from '../user.card';
     DatePipe,
     PrimeTemplate,
     TableModule,
-    UserCard,
-    NgClass
+    NgClass,
+    WaterGallonComponent
   ],
   styles: `
     .row-rollback-hover {
-      background-color: rgba(255, 36, 7, 0.25) !important; /* orange */
+      background-color: rgba(129, 108, 107, 0.25) !important; /* orange */
+    }
+
+    app-water-gallon {
+      height: 2rem;
+    }
+    td {
+      align-content: center;
+    }
+
+    .row-target-hover {
+      position: relative;
+      animation: golden-pulse 1.8s infinite ease-in-out;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.8),
+      0 0 16px rgba(255, 215, 0, 0.6),
+      inset 0 0 6px rgba(255, 215, 0, 0.5);
+      border-left: 4px solid gold;
+      background-color: rgba(255, 215, 0, 0.12);
+    }
+
+    /* Golden glow animation */
+    @keyframes golden-pulse {
+      0% {
+        box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+      }
+      50% {
+        box-shadow: 0 0 18px rgba(255, 215, 0, 1);
+      }
+      100% {
+        box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+      }
+    }
+
+    .rollback-cell {
+      position: relative;
+    }
+
+    .rollback-popup {
+      position: absolute;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(145deg, #3a2b00, #1c1400);
+      color: gold;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+      box-shadow:
+        0 0 12px rgba(255, 215, 0, 0.9),
+        0 0 24px rgba(255, 215, 0, 0.5);
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    /* Arrow */
+    .rollback-popup::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: gold transparent transparent transparent;
     }
   `
 })
@@ -125,10 +207,22 @@ export class WaterRollback implements OnInit {
 
       if (rowIndex <= rollbackIdx) {
         return {'row-rollback-hover': true};
+      } else if (rowIndex === rollbackIdx + 1) {
+        return {'row-target-hover': true};
       }
     }
 
     return {};
+  }
+
+  isAfterRollbackRow(rowIndex: number): boolean {
+    const rollbackId = this.hoverRollbackId();
+    if (rollbackId === null) return false;
+
+    const rollbackIdx = this.stateHistory()
+      .findIndex(r => r.id === rollbackId);
+
+    return rowIndex === rollbackIdx + 1;
   }
 
   protected readonly PrimeIcons = PrimeIcons;
