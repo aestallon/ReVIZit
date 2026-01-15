@@ -1,4 +1,4 @@
-import {Component, computed, inject, signal} from '@angular/core';
+import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {RevizitService} from '../../service/revizit.service';
 import {Button} from 'primeng/button';
 import {FloatLabel} from 'primeng/floatlabel';
@@ -9,6 +9,7 @@ import {MessageService, PrimeIcons} from 'primeng/api';
 import {FormsModule} from '@angular/forms';
 import {Select} from 'primeng/select';
 import {asErrorMsg} from '../../service/errors';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 
 @Component({
@@ -119,7 +120,7 @@ import {asErrorMsg} from '../../service/errors';
     }
   `
 })
-export class WaterStateDef {
+export class WaterStateDef implements OnInit {
 
   service = inject(RevizitService);
   messageService = inject(MessageService);
@@ -137,19 +138,24 @@ export class WaterStateDef {
   protected readonly PrimeIcons = PrimeIcons;
 
   constructor() {
+    this.service._rollbackHappened.pipe(takeUntilDestroyed()).subscribe(() => this.initState());
+  }
+
+  ngOnInit() {
     this.service.loadWaterState()
-      .then(() => {
-        this.waterLevel.set(this.service.waterState().waterLevel);
-        this.emptyCount.set(this.service.waterState().emptyGallons);
-        this.fullCount.set(this.service.waterState().fullGallons);
-        this.flavour.set(this.service.waterState().flavour.id);
-        this.loading.set(false);
-      })
+      .then(() => this.initState())
       .catch((err) => {
-        this.loading.set(false);
         this.unavailable.set(true);
         this.messageService.add(asErrorMsg(err, 'Failed to load water state data'));
-      });
+      })
+      .finally(() => this.loading.set(false));
+  }
+
+  private initState() {
+    this.waterLevel.set(this.service.waterState().waterLevel);
+    this.emptyCount.set(this.service.waterState().emptyGallons);
+    this.fullCount.set(this.service.waterState().fullGallons);
+    this.flavour.set(this.service.waterState().flavour.id);
   }
 
   onStateSaved() {

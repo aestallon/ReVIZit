@@ -6,7 +6,7 @@ import {
   WaterService, WaterStateDetail,
   WaterStateDto
 } from '../../api/revizit';
-import {lastValueFrom} from 'rxjs';
+import {lastValueFrom, Subject} from 'rxjs';
 import {MessageService} from 'primeng/api';
 import {asErrorMsg} from './errors';
 import {UserService} from './user.service';
@@ -48,7 +48,9 @@ export class RevizitService {
     if (this.userService.profile()) {
       await this.loadPendingReports();
     }
-  })
+  });
+
+  _rollbackHappened = new Subject<void>();
 
   constructor() {
     this.userService._needStateRefresh.pipe(takeUntilDestroyed()).subscribe(() => this.loadWaterState());
@@ -110,6 +112,7 @@ export class RevizitService {
   async rollbackState(state: WaterStateDetail) {
     const nuState = await lastValueFrom(this.waterApi.rollbackWaterState(state.id));
     this.waterState.set(nuState.waterState);
+    this._rollbackHappened.next();
   }
 
   async loadAllWaterFlavours() {
