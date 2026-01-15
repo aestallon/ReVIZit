@@ -107,6 +107,11 @@ export class RevizitService {
     this.waterState.set(dto);
   }
 
+  async rollbackState(state: WaterStateDetail) {
+    const nuState = await lastValueFrom(this.waterApi.rollbackWaterState(state.id));
+    this.waterState.set(nuState.waterState);
+  }
+
   async loadAllWaterFlavours() {
     await Promise.all([
       lastValueFrom(this.waterApi.getWaterFlavours()).then(fs => this.waterFlavours.set(new Map(fs.map(flavour => [flavour.id, flavour])))),

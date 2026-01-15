@@ -393,6 +393,28 @@ paths:
                   $ref: '#/components/schemas/WaterStateDetail'
         '403':
           description: Unauthorized
+  /water/rollback/{id}:
+    delete:
+      summary: Rollbacks a water state.
+      tags:
+        - Water
+      description: |
+        Rolls back a water state to a previous one.
+      operationId: rollbackWaterState
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaterStateDetail'
 
   /report:
     post:

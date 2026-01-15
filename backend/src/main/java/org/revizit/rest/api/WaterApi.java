@@ -430,6 +430,37 @@ public interface WaterApi {
     }
 
 
+    String PATH_ROLLBACK_WATER_STATE = "/water/rollback/{id}";
+    /**
+     * DELETE /water/rollback/{id} : Rollbacks a water state.
+     * Rolls back a water state to a previous one. 
+     *
+     * @param id  (required)
+     * @return Ok (status code 200)
+     */
+    @Operation(
+        operationId = "rollbackWaterState",
+        summary = "Rollbacks a water state.",
+        description = "Rolls back a water state to a previous one. ",
+        tags = { "Water" },
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Ok", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = WaterStateDetail.class))
+            })
+        }
+    )
+    @RequestMapping(
+        method = RequestMethod.DELETE,
+        value = WaterApi.PATH_ROLLBACK_WATER_STATE,
+        produces = { "application/json" }
+    )
+    default ResponseEntity<WaterStateDetail> rollbackWaterState(
+        @NotNull @Parameter(name = "id", description = "", required = true, in = ParameterIn.PATH) @PathVariable("id") Long id
+    ) {
+        return getDelegate().rollbackWaterState(id);
+    }
+
+
     String PATH_SUBMIT_WATER_REPORT = "/report";
     /**
      * POST /report : Submits a water report.

@@ -62,6 +62,26 @@ public class SysLog {
     return sysLog;
   }
 
+  public static SysLog ofStatesRolledBack(List<WaterReport> reports,
+                                          UserAccount user,
+                                          LocalDateTime now) {
+    final var actor = user.getUsername();
+    final var sysLog = new SysLog();
+    sysLog.setAction("statesRolledBack");
+    sysLog.setUsername(actor);
+    sysLog.setTimestamp(now);
+
+    for (var report : reports) {
+      final var element = new SysLogElement();
+      element.setQualifier("state");
+      element.setName("rollback");
+      element.setMsg(report.asMsgString());
+      sysLog.getElements().add(element);
+    }
+
+    return sysLog;
+  }
+
   public static SysLog ofReportsAccepted(List<WaterReport> reports) {
     final var accepter = reports.stream()
         .filter(it -> it.getApprovedBy() != null)

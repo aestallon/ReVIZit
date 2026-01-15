@@ -293,6 +293,28 @@ public interface WaterApiDelegate {
     }
 
     /**
+     * DELETE /water/rollback/{id} : Rollbacks a water state.
+     * Rolls back a water state to a previous one. 
+     *
+     * @param id  (required)
+     * @return Ok (status code 200)
+     * @see WaterApi#rollbackWaterState
+     */
+    default ResponseEntity<WaterStateDetail> rollbackWaterState(Long id) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "{ \"waterState\" : { \"emptyGallons\" : 3, \"reportedAt\" : \"2021-01-01T00:00:00Z\", \"flavour\" : { \"inactive\" : false, \"name\" : \"Regular\", \"id\" : 1 }, \"fullGallons\" : 4, \"waterLevel\" : 75 }, \"id\" : 1, \"reportedBy\" : \"John Doe\" }";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+
+    }
+
+    /**
      * POST /report : Submits a water report.
      * Submits a water report for the current user (if any).
      *

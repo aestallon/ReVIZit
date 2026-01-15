@@ -18,7 +18,7 @@ import {RevizitService} from '../service/revizit.service';
         <h2>There {{ fullCount() === 1 ? 'is' : 'are' }} <b>{{ fullCount() }}</b> full
           gallon{{ fullCount() === 1 ? '' : 's' }},</h2>
         <h2>and <b>{{ emptyCount() }}</b> empty one{{ emptyCount() === 1 ? '' : 's' }}.</h2>
-        <i>As of {{ reportDate() | date:'d MMM, yyyy' }}</i>
+        <i>As of {{ reportDate() | date:'medium' }}</i>
         <div class="cta">
           <div class="cta-content">
             <span>Has anything changed since?</span>

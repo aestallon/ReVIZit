@@ -45,7 +45,7 @@ public class WaterState {
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
-  @OneToOne(fetch = FetchType.EAGER)
+  @OneToOne
   @JoinColumn(name = "report")
   private WaterReport report;
 

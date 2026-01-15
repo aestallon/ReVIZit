@@ -2,7 +2,6 @@ package org.revizit.rest.impl;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import org.revizit.event.PendingReportsChanged;
@@ -78,6 +77,15 @@ public class WaterApiDelegateImpl implements WaterApiDelegate {
   public ResponseEntity<WaterStateDetail> defineCurrentWaterState(WaterStateDto waterStateDto) {
     final var state = waterService.defineState(waterStateDto);
     eventPublisher.publishEvent(new WaterStateChanged());
+    return ResponseEntity.ok(state.toDetail());
+  }
+
+  @Override
+  public ResponseEntity<WaterStateDetail> rollbackWaterState(Long id) {
+    final var state = waterService.rollbackToPreviousState(id);
+    if (state == null) {
+      return ResponseEntity.notFound().build();
+    }
     return ResponseEntity.ok(state.toDetail());
   }
 

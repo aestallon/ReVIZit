@@ -6,6 +6,7 @@ import {FormsModule} from '@angular/forms';
 import {WaterStateDef} from '../component/settings/water-state-def';
 import {WaterFlavourDef} from '../component/settings/water-flavour-def';
 import {UserDef} from '../component/settings/user-def';
+import {WaterRollback} from '../component/settings/water-rollback';
 
 @Component({
   selector: 'app-settings',
@@ -14,6 +15,7 @@ import {UserDef} from '../component/settings/user-def';
       <div class="settings-content">
         <p-panel header="Define the Current State">
           <app-water-state-def></app-water-state-def>
+          <app-water-rollback></app-water-rollback>
         </p-panel>
         <p-panel header="Flavours">
           <app-water-flavour-def></app-water-flavour-def>
@@ -30,7 +32,8 @@ import {UserDef} from '../component/settings/user-def';
     FormsModule,
     WaterStateDef,
     WaterFlavourDef,
-    UserDef
+    UserDef,
+    WaterRollback
   ],
   styles: `
     .settings-card {

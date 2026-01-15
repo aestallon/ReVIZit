@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import org.revizit.event.PendingReportsChanged;
+import org.revizit.event.WaterStateChanged;
 import org.revizit.persistence.entity.ReportType;
 import org.revizit.persistence.entity.SysLog;
 import org.revizit.persistence.entity.WaterFlavour;
@@ -34,6 +38,7 @@ public class WaterService {
   private final WaterReportRepository waterReportRepository;
   private final WaterFlavourRepository waterFlavourRepository;
 
+  private final Lock mgmtLock = new ReentrantLock();
 
   public WaterState currentState() {
     return waterStateRepository.findTopByOrderByCreatedAtDesc().orElse(null);
@@ -114,52 +119,62 @@ public class WaterService {
 
   @Transactional
   public WaterState acceptReports(List<Long> ids) {
-    final var user = userService.currentUser();
-    if (user == null) {
-      throw new IllegalStateException("Log-in is required to accept reports!");
+    if (!mgmtLock.tryLock()) {
+      throw new IllegalStateException("Another report accepting operation is in progress!");
     }
 
-    final var pendingReports = getPendingReports();
-    if (ids.size() > pendingReports.size()) {
-      throw new IllegalArgumentException("One or more reports are not pending!");
-    }
+    try {
 
-    List<WaterReport> reportsToAccept = new ArrayList<>(ids.size());
-    for (int i = 0; i < ids.size(); i++) {
-      final var reportId = pendingReports.get(i).getId();
-      final var id = ids.get(i);
-      if (reportId.longValue() != id) {
-        throw new IllegalArgumentException("Invalid id!");
+      final var user = userService.currentUser();
+      if (user == null) {
+        throw new IllegalStateException("Log-in is required to accept reports!");
       }
 
-      reportsToAccept.add(pendingReports.get(i));
-    }
+      final var pendingReports = getPendingReports();
+      if (ids.size() > pendingReports.size()) {
+        throw new IllegalArgumentException("One or more reports are not pending!");
+      }
 
-    var state = currentState();
-    if (state == null) {
-      throw new IllegalStateException("Initial water state is not yet defined!");
-    }
-
-    final var now = LocalDateTime.now(clock);
-    for (final var report : reportsToAccept) {
-
-      state = switch (state.accept(report)) {
-        case WaterState.ReportResult.New(var newState) -> {
-          report.setApprovedAt(now);
-          report.setApprovedBy(user);
-          yield waterStateRepository.save(newState);
+      List<WaterReport> reportsToAccept = new ArrayList<>(ids.size());
+      for (int i = 0; i < ids.size(); i++) {
+        final var reportId = pendingReports.get(i).getId();
+        final var id = ids.get(i);
+        if (reportId.longValue() != id) {
+          throw new IllegalArgumentException("Invalid id!");
         }
-        case WaterState.ReportResult.Rejection _ -> {
-          report.setRejectedAt(now);
-          report.setRejectedBy(user);
-          waterReportRepository.save(report);
-          yield state;
-        }
-      };
-    }
 
-    eventPublisher.publishEvent(SysLog.ofReportsAccepted(reportsToAccept));
-    return state;
+        reportsToAccept.add(pendingReports.get(i));
+      }
+
+      var state = currentState();
+      if (state == null) {
+        throw new IllegalStateException("Initial water state is not yet defined!");
+      }
+
+      final var now = LocalDateTime.now(clock);
+      for (final var report : reportsToAccept) {
+
+        state = switch (state.accept(report)) {
+          case WaterState.ReportResult.New(var newState) -> {
+            report.setApprovedAt(now);
+            report.setApprovedBy(user);
+            yield waterStateRepository.save(newState);
+          }
+          case WaterState.ReportResult.Rejection _ -> {
+            report.setRejectedAt(now);
+            report.setRejectedBy(user);
+            waterReportRepository.save(report);
+            yield state;
+          }
+        };
+      }
+
+      eventPublisher.publishEvent(SysLog.ofReportsAccepted(reportsToAccept));
+      return state;
+
+    } finally {
+      mgmtLock.unlock();
+    }
   }
 
   @Transactional
@@ -187,6 +202,52 @@ public class WaterService {
     }
     waterReportRepository.saveAll(reportsToReject);
     eventPublisher.publishEvent(SysLog.ofReportsRejected(reportsToReject));
+  }
+
+  @Transactional
+  public WaterState rollbackToPreviousState(long id) {
+    final var user = userService.currentUser();
+    if (!userService.isUserAdmin(user)) {
+      throw new NotAuthorisedException();
+    }
+
+    final var currState = currentState();
+    if (currState == null) {
+      throw new IllegalStateException("Initial water state is not yet defined!");
+    }
+
+    final var idInt = (int) id;
+    final var targetState = waterStateRepository.findById(idInt)
+        .orElseThrow(() -> new NotFoundException("Target state not found!"));
+    final var statesToRollback = waterStateRepository.findStateHistorySince(idInt);
+    if (statesToRollback.isEmpty()) {
+      throw new IllegalStateException("No states to rollback!");
+    }
+
+    if (!(Objects.equals(targetState.getId(), statesToRollback.getFirst().getId())
+        && Objects.equals(currState.getId(), statesToRollback.getLast().getId()))) {
+      throw new IllegalStateException("Target state is not the last state in history!");
+    }
+
+    final List<WaterReport> rescindedReports = statesToRollback.stream()
+        .map(WaterState::getReport)
+        .toList();
+    rescindedReports.forEach(it -> {
+      it.setApprovedAt(null);
+      it.setApprovedBy(null);
+      it.setRejectedAt(null);
+      it.setRejectedBy(null);
+    });
+
+    waterReportRepository.saveAll(rescindedReports);
+    waterStateRepository.deleteAll(statesToRollback);
+    eventPublisher.publishEvent(SysLog.ofStatesRolledBack(
+        rescindedReports,
+        user,
+        LocalDateTime.now(clock)));
+    eventPublisher.publishEvent(new WaterStateChanged());
+    eventPublisher.publishEvent(new PendingReportsChanged());
+    return currentState();
   }
 
 

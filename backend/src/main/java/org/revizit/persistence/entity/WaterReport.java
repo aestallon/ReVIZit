@@ -86,10 +86,13 @@ public class WaterReport {
   }
 
   public String asMsgString() {
-    return switch (kind) {
+    final var msg = switch (kind) {
       case BALLOON_REFILL -> "Refilled empty gallons.";
       case BALLOON_CHANGE -> "Changed the active gallon.";
       case SET_PERCENTAGE -> String.format("Water level is at %d%%", val);
     };
+    final var time = reportedAt.toString();
+    return String.format("%s (Reported at: %s)", msg, time);
   }
+
 }
