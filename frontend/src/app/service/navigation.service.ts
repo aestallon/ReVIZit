@@ -15,14 +15,19 @@ export class NavigationService {
 
   navigating = signal(false);
   router = inject(Router);
+  timeoutId: number | null = null;
 
   constructor() {
     this.router.events.subscribe((e) => {
       if (e instanceof NavigationStart) {
-        this.navigating.set(true);
+        this.timeoutId = setTimeout(() => this.navigating.set(true), 300);
       }
 
       if (e instanceof NavigationEnd || e instanceof NavigationCancel || e instanceof NavigationError) {
+        if (this.timeoutId !== null) {
+          clearTimeout(this.timeoutId);
+          this.timeoutId = null;
+        }
         this.navigating.set(false);
       }
     });
