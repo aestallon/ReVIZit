@@ -33,6 +33,8 @@ public class SysLog {
     final var reporter = report.getReportedBy();
     if (reporter != null) {
       sysLog.setUsername(reporter.getUsername());
+    } else {
+      sysLog.setUsername("anonymous");
     }
 
     sysLog.setTimestamp(report.getReportedAt());
