@@ -7,6 +7,7 @@ import {Button} from 'primeng/button';
 import {DatePipe, NgClass} from '@angular/common';
 import {TableModule} from 'primeng/table';
 import {WaterGallonComponent} from '../gallon';
+import {Message} from 'primeng/message';
 
 @Component({
   selector: 'app-water-rollback',
@@ -18,6 +19,9 @@ import {WaterGallonComponent} from '../gallon';
                [loading]="loading()" class="reports-table">
         <ng-template pTemplate="caption">
           <h4>Rollback State</h4>
+          <p-message severity="warn" [icon]="PrimeIcons.INFO_CIRCLE">
+            <p>You may roll back the application state here.</p>
+          </p-message>
         </ng-template>
         <ng-template pTemplate="header">
           <tr>
@@ -52,7 +56,8 @@ import {WaterGallonComponent} from '../gallon';
                 <p-button label="ROLLBACK"
                           severity="danger"
                           [icon]="PrimeIcons.TIMES_CIRCLE"
-                          [disabled]="loading()"
+                          [disabled]="loading() || unavailable()"
+                          [loading]="loading()"
                           (mouseenter)="hoverRollback(state)"
                           (onClick)="performRollback(state)">
                 </p-button>
@@ -82,7 +87,8 @@ import {WaterGallonComponent} from '../gallon';
     PrimeTemplate,
     TableModule,
     NgClass,
-    WaterGallonComponent
+    WaterGallonComponent,
+    Message
   ],
   styles: `
     .row-rollback-hover {
