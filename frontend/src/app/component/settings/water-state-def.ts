@@ -10,6 +10,7 @@ import {FormsModule} from '@angular/forms';
 import {Select} from 'primeng/select';
 import {asErrorMsg} from '../../service/errors';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {DatePicker} from 'primeng/datepicker';
 
 
 @Component({
@@ -66,6 +67,17 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
           </p-select>
           <label for="on_flavour">Current Flavour</label>
         </p-float-label>
+        <p-float-label>
+          <p-date-picker [(ngModel)]="defineAt"
+                         [minDate]="defineAtMin()"
+                         [maxDate]="defineAtMax()"
+                         [showTime]="true"
+                         id="defineAt"
+                         inputId="defineAt"
+                         [showClear]="true">
+          </p-date-picker>
+          <label for="on_defineAt">Define at:</label>
+        </p-float-label>
       </div>
       <p-message severity="info" icon="pi pi-info-circle" class="settings-message">
         <p>You can define the current state of the water gallons here.</p>
@@ -91,7 +103,8 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     Message,
     WaterGallonComponent,
     FormsModule,
-    Select
+    Select,
+    DatePicker
   ],
   styles: `
     .state-container {
@@ -132,6 +145,20 @@ export class WaterStateDef implements OnInit {
   flavourOptions = computed(() => [...this.service.waterFlavours().values()]);
   flavour = signal(this.service.waterState().flavour.id);
 
+  defineAt = signal<Date | null>(null);
+  defineAtMin = computed(() => {
+    const currStateTimestamp = this.service.waterState().reportedAt;
+    return !!currStateTimestamp ? new Date(currStateTimestamp) : undefined;
+  });
+  defineAtMax = computed(() => {
+    const pendingReports = this.service.pendingReports();
+    if (pendingReports.length === 0) {
+      return undefined;
+    }
+
+    return new Date(pendingReports.at(-1)!.reportedAt);
+  })
+
   loading = signal(true);
   unavailable = signal(false);
 
@@ -159,6 +186,12 @@ export class WaterStateDef implements OnInit {
   }
 
   onStateSaved() {
+    const reportedAt = this.defineAt()?.toISOString();
+    if (!reportedAt) {
+      this.messageService.add({severity: 'warn', summary: 'Warning', detail: 'Please select a date'});
+      return;
+    }
+
     this.loading.set(true);
     this.service
       .defineState({
@@ -170,7 +203,7 @@ export class WaterStateDef implements OnInit {
           name: '',
           inactive: false,
         },
-        reportedAt: new Date().toISOString(),
+        reportedAt,
       })
       .then(() => {
         this.messageService.add({
